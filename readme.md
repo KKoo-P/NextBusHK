@@ -37,7 +37,7 @@ Service Worker 快取，加速靜態資源載入。
 
 開始使用
 
-等待 1~2 分鐘，GitHub 會生成您的網站網址（格式如：https://<YOUR-USERNAME>.github.io/<REPO-NAME>/）。
+等待 1~2 分鐘，網站網址 https://kkoo-p.github.io/NextBusHK/。
 
 在手機瀏覽器（iOS Safari / Android Chrome）開啟該網址，點擊「安裝 App」或「新增至主畫面」即可享用如原生 App 般的巴士指南！
 
