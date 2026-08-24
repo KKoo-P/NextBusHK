@@ -1,0 +1,18 @@
+{
+"name": "香港即時巴士路線指南 HK Bus Express",
+"short_name": "HK Bus Express",
+"description": "香港九巴及城巴即時到站資訊與互動地圖",
+"start_url": "./index.html",
+"display": "standalone",
+"orientation": "portrait",
+"background_color": "#111827",
+"theme_color": "#E1251B",
+"icons": [
+{
+"src": "data:image/svg+xml;utf8,",
+"sizes": "512x512",
+"type": "image/svg+xml",
+"purpose": "any maskable"
+}
+]
+}
