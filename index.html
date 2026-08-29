@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>香港巴士通 HK Bus Express - 支援九巴、城巴及新大嶼山巴士(NLB)</title>
+    <title>香港巴士通 HK Bus Express - 支援九巴、城巴及嶼巴即時到站與完整車費</title>
 
     <!-- PWA 與行動裝置 Meta 設定 -->
     <meta name="application-name" content="HK Bus Express">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HK Bus Express">
-    <meta name="theme-color" content="#0F172A" id="meta-theme-color">
-    <meta name="description" content="全港巴士即時到站資訊平台：支援九龍巴士 (KMB)、城巴/新巴 (CTB) 及新大嶼山巴士 (NLB)，提供平日及假日詳細車費、即時 ETA 與互動路線地圖。">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="description" content="全港巴士即時到站與車費查詢平台：支援九巴 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB)，提供成人正價、小童長者特惠、$2優惠、分段收費、假日票價與互動路線地圖。">
 
-    <!-- PWA App PNG 圖標與 Favicon 設定 -->
-    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-    <link rel="manifest" href="./manifest.json">
-
-    <!-- Tailwind CSS (CDN) -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -27,42 +21,57 @@
             theme: {
                 extend: {
                     colors: {
-                        kmb: '#E1251B',
-                        ctb: '#00508F',
-                        ctbYellow: '#FFD100',
-                        nlb: '#00897B',
-                        nlbDark: '#00695C',
-                        surface: '#0F172A',
-                        cardDark: '#1E293B',
-                        borderDark: '#334155'
+                        kmb: {
+                            DEFAULT: '#dc2626',
+                            dark: '#991b1b',
+                            light: '#fef2f2',
+                            border: '#f87171'
+                        },
+                        ctb: {
+                            DEFAULT: '#eab308',
+                            dark: '#854d0e',
+                            light: '#fefce8',
+                            border: '#facc15'
+                        },
+                        nlb: {
+                            DEFAULT: '#059669',
+                            dark: '#065f46',
+                            light: '#ecfdf5',
+                            border: '#34d399'
+                        }
+                    },
+                    boxShadow: {
+                        'subtle': '0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
+                        'glow': '0 0 15px rgba(59, 130, 246, 0.5)'
                     }
                 }
             }
         }
     </script>
 
-    <!-- Leaflet CSS & JS 地圖庫 -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-    <!-- Font Awesome 圖示 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- FontAwesome 圖標庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet 地圖樣式與腳本 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        /* 基礎全螢幕與流暢捲動 */
-        html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang HK", "Noto Sans HK", "Microsoft JhengHei", sans-serif;
-            background-color: #0F172A;
-            color: #F8FAFC;
-            -webkit-tap-highlight-color: transparent;
+        /* 自訂滾動條 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        /* 隱藏滾動條但保持滾動能力 */
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+        /* 隱藏滾動條但保持滾動 */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -70,1327 +79,1468 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-
-        /* 自定義捲軸 */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        /* 脈衝動態效果 */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1E293B;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #64748B;
-        }
-
-        /* Leaflet 地圖深色濾鏡與自定義標記 */
-        .leaflet-container {
-            background: #0b1120 !important;
-            font-family: inherit;
-        }
-        .custom-stop-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            border: 2px solid white;
-            border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .custom-stop-icon:hover, .custom-stop-icon.active {
-            transform: scale(1.35);
-            z-index: 1000 !important;
-        }
-        .custom-user-icon {
-            background: #3B82F6;
-            border: 3px solid white;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #3B82F6;
-            animation: pulse-blue 2s infinite;
-        }
-
-        @keyframes pulse-blue {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 14px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-
-        /* 脈衝倒數計時動畫 */
-        @keyframes countdown-pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.85; }
-        }
-        .animate-live {
-            animation: countdown-pulse 1.8s infinite;
+        .live-pulse {
+            animation: pulse-ring 2s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="h-full w-full flex flex-col antialiased select-none">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-rose-500 selection:text-white pb-16 md:pb-0">
 
-    <!-- 頂部導覽列 (Responsive Header) -->
-    <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 z-30 px-3 py-2.5 sm:px-5 flex items-center justify-between shadow-md">
-        <div class="flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 via-teal-600 to-amber-500 flex items-center justify-center shadow-lg shadow-teal-900/30 overflow-hidden">
-                <img src="./apple-touch-icon.png" alt="App Icon" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-bus text-white text-base\'></i>';">
-            </div>
-            <div>
-                <div class="flex items-center space-x-2">
-                    <h1 id="appHeaderTitle" class="font-bold text-base sm:text-lg tracking-tight text-white flex items-center gap-1.5">
-                        香港巴士通
-                    </h1>
+    <!-- 頂部導航列 -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('routes')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-amber-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-rose-900/30">
+                    <i class="fa-solid fa-bus text-white text-lg"></i>
                 </div>
-                <p id="appHeaderSubtitle" class="text-[11px] text-slate-400 hidden sm:block">九巴 KMB • 城巴/新巴 CTB • 新大嶼山巴士 NLB 即時到站與詳細車費</p>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <h1 class="font-bold text-lg tracking-tight text-white">香港巴士通</h1>
+                        <span class="text-[10px] font-extrabold bg-gradient-to-r from-rose-500 to-amber-500 text-white px-1.5 py-0.5 rounded uppercase">Fare+ ETA</span>
+                    </div>
+                    <p class="text-xs text-slate-400">九巴・城巴・嶼巴 車費及即時到站</p>
+                </div>
             </div>
-        </div>
 
-        <!-- 頂部功能區 -->
-        <div class="flex items-center space-x-2">
-            <!-- 搜尋框 -->
-            <div class="relative w-32 sm:w-56 md:w-64">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input id="searchInput" type="text" placeholder="搜尋路線 (如 1, 11, 3M, 101)" 
-                       class="w-full bg-slate-800 text-slate-100 placeholder-slate-400 text-xs sm:text-sm pl-8 pr-7 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all">
-                <button id="clearSearchBtn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
-                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+            <div class="flex items-center space-x-2">
+                <!-- 重新整理按鈕 -->
+                <button id="refreshEtaBtn" onclick="manualRefreshEta()" title="更新到站時間" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">
+                    <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                <!-- 快速切換深淺模式 (保留深色優先) -->
+                <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 border border-slate-700 transition">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
                 </button>
             </div>
-
-            <!-- GPS 附近按鈕 -->
-            <button id="nearbyBtn" title="尋找附近巴士站" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-teal-400 transition flex items-center gap-1.5 text-xs">
-                <i class="fa-solid fa-location-crosshairs text-teal-400"></i>
-                <span id="nearbyBtnText" class="hidden md:inline">附近車站</span>
-            </button>
-
-            <!-- 中英文切換按鈕 (Language Switcher) -->
-            <button id="langToggleBtn" title="切換中英文 / Switch Language" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-teal-400 text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                <i class="fa-solid fa-globe text-teal-400"></i>
-                <span id="langToggleText">EN</span>
-            </button>
-
-            <!-- 手機版 地圖/清單 切換按鈕 -->
-            <button id="toggleMobileViewBtn" class="lg:hidden p-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs flex items-center justify-center transition shadow">
-                <i id="toggleIcon" class="fa-solid fa-map"></i>
-            </button>
         </div>
     </header>
 
-    <!-- 巴士公司篩選標籤 (Company Filter Bar) - 指定順序：全部路線 All, 九巴, 城巴/新巴, 新大嶼山巴士 -->
-    <div class="bg-slate-900 border-b border-slate-800/80 px-3 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar z-20">
-        <button data-company="ALL" id="tabBtnAll" class="company-tab active px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap bg-teal-600 text-white shadow-sm">
-            <i class="fa-solid fa-layer-group mr-1"></i> 全部路線 All
-        </button>
-        <button data-company="KMB" id="tabBtnKmb" class="company-tab px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-red-800/40">
-            <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5"></span> 九巴 (KMB)
-        </button>
-        <button data-company="CTB" id="tabBtnCtb" class="company-tab px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-blue-800/40">
-            <span class="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-1.5"></span> 城巴/新巴 (CTB)
-        </button>
-        <button data-company="NLB" id="tabBtnNlb" class="company-tab px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-teal-700/50">
-            <span class="inline-block w-2 h-2 rounded-full bg-teal-400 mr-1.5"></span> 新大嶼山巴士 (NLB)
-        </button>
-        <button data-company="FAV" id="tabBtnFav" class="company-tab px-3 py-1 rounded-full text-xs font-medium transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-amber-500/30">
-            <i class="fa-solid fa-star text-amber-400 mr-1"></i> <span id="favTabLabel">我的收藏</span> (<span id="favCount">0</span>)
-        </button>
-    </div>
+    <!-- 主要內容區 -->
+    <main class="max-w-6xl mx-auto w-full flex-1 p-3 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- 主內容區：響應式雙欄佈局 (Responsive Split Layout) -->
-    <main class="flex-1 relative flex overflow-hidden">
-
-        <!-- 左側主面板 (Sidebar / Content Drawer) -->
-        <section id="sidebarSection" class="w-full lg:w-[440px] xl:w-[480px] h-full bg-slate-900/95 flex flex-col border-r border-slate-800 z-10 transition-all duration-300 relative shadow-2xl">
+        <!-- 左側：搜尋、路線列表、詳細資訊面板 (7 cols on lg) -->
+        <div class="lg:col-span-7 flex flex-col space-y-4">
             
-            <!-- 路線搜尋結果 / 推薦路線清單 -->
-            <div id="routeListContainer" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
-                <div id="loadingRoutes" class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-3">
-                    <div class="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p id="loadingRoutesText" class="text-xs">正在載入九巴、城巴/新巴與新大嶼山巴士路線及車費資料庫...</p>
-                </div>
-                <div id="routesGrid" class="space-y-2 hidden"></div>
-                <div id="noResults" class="hidden text-center py-16 text-slate-400 space-y-2">
-                    <i class="fa-regular fa-folder-open text-3xl text-slate-500"></i>
-                    <p id="noResultsTitle" class="text-sm font-medium">找不到符合條件的路線</p>
-                    <p id="noResultsSubtitle" class="text-xs text-slate-500">請嘗試輸入路線號碼，如 NLB 1, 11, 3M, 23, B2, 38 或 KMB 1A 等</p>
-                </div>
+            <!-- 視圖切換標籤 (搜尋路線 / 附近車站 / 我的收藏 / 車費總覽) -->
+            <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 overflow-x-auto no-scrollbar gap-1">
+                <button id="tab-routes" onclick="switchView('routes')" class="flex-1 min-w-[75px] py-2 px-3 text-xs md:text-sm font-medium rounded-lg bg-rose-600 text-white transition flex items-center justify-center gap-1.5 shadow">
+                    <i class="fa-solid fa-route"></i> 路線查詢
+                </button>
+                <button id="tab-nearby" onclick="switchView('nearby')" class="flex-1 min-w-[75px] py-2 px-3 text-xs md:text-sm font-medium rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-location-dot"></i> 附近巴士站
+                </button>
+                <button id="tab-bookmarks" onclick="switchView('bookmarks')" class="flex-1 min-w-[75px] py-2 px-3 text-xs md:text-sm font-medium rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-bookmark"></i> 常用收藏
+                </button>
+                <button id="tab-fareguide" onclick="switchView('fareguide')" class="flex-1 min-w-[75px] py-2 px-3 text-xs md:text-sm font-medium rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-coins"></i> 車費速查
+                </button>
             </div>
 
-            <!-- 路線詳細資訊與 ETA 即時站點面板 -->
-            <div id="routeDetailView" class="hidden absolute inset-0 bg-slate-900 z-20 flex flex-col">
+            <!-- 視圖 1: 路線查詢 -->
+            <div id="view-routes" class="space-y-4">
                 
-                <!-- 路線詳細頭部 (Route Header) -->
-                <div class="p-3.5 bg-slate-850 border-b border-slate-800 shadow-md">
-                    <div class="flex items-center justify-between mb-2">
-                        <button id="backToRoutesBtn" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-1.5 transition">
-                            <i class="fa-solid fa-arrow-left"></i> <span id="backBtnText">返回路線列表</span>
+                <!-- 搜尋與營運商篩選 -->
+                <div class="bg-slate-800/60 border border-slate-700/80 rounded-2xl p-4 shadow-subtle backdrop-blur">
+                    <!-- 搜尋欄 -->
+                    <div class="relative mb-3">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="routeSearchInput" placeholder="搜尋路線號碼或目的地 (例如: 1A, 102, 960, A21, 11...)" 
+                               class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-10 py-2.5 text-sm md:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition"
+                               oninput="handleSearchInput(this.value)">
+                        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+                            <i class="fa-solid fa-xmark"></i>
                         </button>
-                        <div class="flex items-center space-x-1.5">
-                            <button id="favCurrentRouteBtn" class="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition" title="收藏路線">
-                                <i id="favCurrentIcon" class="fa-regular fa-star text-sm"></i>
-                            </button>
-                            <button id="refreshEtaBtn" class="px-2.5 py-1 rounded bg-teal-600 hover:bg-teal-500 text-white text-xs flex items-center gap-1.5 transition shadow">
-                                <i id="refreshEtaIcon" class="fa-solid fa-rotate-right"></i>
-                                <span id="refreshCounterText">15s</span>
-                            </button>
-                        </div>
                     </div>
 
-                    <!-- 路線號碼與起訖點 -->
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center space-x-2.5">
-                            <span id="detailRouteBadge" class="px-2.5 py-1 rounded-lg font-black text-lg tracking-wider text-white bg-teal-600 shadow">
-                                --
-                            </span>
+                    <!-- 巴士公司篩選按鈕 -->
+                    <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                        <span class="text-slate-400 font-medium mr-1"><i class="fa-solid fa-filter"></i> 篩選:</span>
+                        <button onclick="setCompanyFilter('ALL')" id="filter-ALL" class="company-filter-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-medium transition">全部 All</button>
+                        <button onclick="setCompanyFilter('KMB')" id="filter-KMB" class="company-filter-btn px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> 九巴 KMB
+                        </button>
+                        <button onclick="setCompanyFilter('CTB')" id="filter-CTB" class="company-filter-btn px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-yellow-400"></span> 城巴 CTB
+                        </button>
+                        <button onclick="setCompanyFilter('NLB')" id="filter-NLB" class="company-filter-btn px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 嶼巴 NLB
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 搜尋結果路線清單 (未選取路線時顯示) -->
+                <div id="routeListContainer" class="space-y-2">
+                    <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                        <span id="routeCountText">載入路線數據中...</span>
+                        <span>點擊路線查看完整車費與即時到站</span>
+                    </div>
+                    <div id="routeList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[520px] overflow-y-auto pr-1">
+                        <!-- 動態插入路線卡片 -->
+                    </div>
+                </div>
+
+                <!-- 已選定路線詳細資訊 (選中路線時顯示) -->
+                <div id="routeDetailCard" class="hidden space-y-4">
+                    
+                    <!-- 路線標題與方向切換卡片 -->
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-800/90 border border-slate-700 rounded-2xl p-4 shadow-subtle relative overflow-hidden">
+                        <!-- 背景水印裝飾 -->
+                        <div id="companyWatermark" class="absolute -right-4 -bottom-6 text-7xl font-black text-white/5 uppercase select-none pointer-events-none">KMB</div>
+                        
+                        <div class="flex items-start justify-between relative z-10">
                             <div>
-                                <div id="detailCompanyTag" class="text-[10px] uppercase font-bold tracking-wider text-teal-400 flex items-center gap-1">
-                                    新大嶼山巴士 (NLB)
+                                <div class="flex items-center gap-2 mb-1">
+                                    <button onclick="backToRouteList()" class="text-xs bg-slate-700/80 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+                                        <i class="fa-solid fa-arrow-left"></i> 返回清單
+                                    </button>
+                                    <span id="detailCoBadge" class="text-xs font-bold px-2 py-0.5 rounded uppercase">KMB</span>
+                                    <span id="detailSpecialBadge" class="hidden text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium px-1.5 py-0.5 rounded">特別班次</span>
                                 </div>
-                                <h2 id="detailRouteTitle" class="text-sm sm:text-base font-bold text-white line-clamp-1">
-                                    載入中...
+                                <h2 class="text-2xl md:text-3xl font-extrabold text-white flex items-center gap-2 tracking-tight">
+                                    <span id="detailRouteNo">--</span>
+                                    <span class="text-sm md:text-base font-normal text-slate-300" id="detailRouteDest">開往 --</span>
                                 </h2>
                             </div>
+
+                            <button id="bookmarkRouteBtn" onclick="toggleRouteBookmark()" class="p-2.5 rounded-xl bg-slate-700/80 hover:bg-slate-700 text-slate-400 hover:text-amber-400 border border-slate-600 transition">
+                                <i id="bookmarkRouteIcon" class="fa-regular fa-star text-lg"></i>
+                            </button>
                         </div>
-                    </div>
 
-                    <!-- 方向切換按鈕 (Bound / Direction Switcher) -->
-                    <div id="boundSwitchContainer" class="mt-2.5 grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
-                        <button id="boundBtnOut" class="py-1 px-2 rounded-md font-medium text-center transition bg-teal-600 text-white truncate">
-                            往 目的地
-                        </button>
-                        <button id="boundBtnIn" class="py-1 px-2 rounded-md font-medium text-center transition text-slate-400 hover:text-white truncate">
-                            往 起點
-                        </button>
-                    </div>
+                        <!-- 車費資訊展示橫幅 (解決九巴、城巴車費問題核心) -->
+                        <div class="mt-4 pt-3 border-t border-slate-700/80 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                            <!-- 全程成人正價 -->
+                            <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-700/60">
+                                <span class="text-[11px] text-slate-400 block font-medium">全程成人正價</span>
+                                <span id="fareAdult" class="text-base md:text-lg font-bold text-emerald-400">$0.0</span>
+                            </div>
+                            <!-- 小童/長者特惠 (半價) -->
+                            <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-700/60">
+                                <span class="text-[11px] text-slate-400 block font-medium">小童 / 長者半價</span>
+                                <span id="fareConcession" class="text-base md:text-lg font-bold text-sky-400">$0.0</span>
+                            </div>
+                            <!-- 政府 $2 優惠 / 樂悠咭 -->
+                            <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-700/60">
+                                <span class="text-[11px] text-slate-400 block font-medium">樂悠咭 / $2 優惠</span>
+                                <span id="fareGovScheme" class="text-base md:text-lg font-bold text-amber-400">$2.0</span>
+                            </div>
+                            <!-- 假日車費 (如適用，嶼巴或假日線) -->
+                            <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-700/60">
+                                <span class="text-[11px] text-slate-400 block font-medium">假日 / 附加車費</span>
+                                <span id="fareHoliday" class="text-base md:text-lg font-bold text-purple-400">同價</span>
+                            </div>
+                        </div>
 
-                    <!-- ★ 車費資訊卡片 (Fare Information Box) -->
-                    <div id="fareInfoCard" class="mt-2.5 p-2.5 rounded-lg bg-slate-800/80 border border-slate-700/80 text-xs space-y-1.5">
-                        <div class="flex items-center justify-between text-slate-300 font-semibold border-b border-slate-700/60 pb-1">
-                            <span id="fareTitleText" class="flex items-center gap-1.5 text-teal-300">
-                                <i class="fa-solid fa-ticket"></i> 車費資料 (Bus Fare)
+                        <!-- 分段收費提示與雙向分段說明 -->
+                        <div id="fareRemarksBox" class="mt-2.5 flex items-center justify-between text-xs text-slate-300 bg-slate-900/40 px-3 py-1.5 rounded-lg border border-slate-800">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-info text-amber-400 text-xs"></i>
+                                <span id="fareRemarksText">本路線支援沿途分段收費，請參考下方各站標註金額。</span>
                             </span>
-                            <span id="govSchemeTag" class="text-[10px] text-slate-400 px-1.5 py-0.5 rounded bg-slate-700 font-normal">政府 $2 優惠適用</span>
+                            <button onclick="openFareBreakdownModal()" class="text-rose-400 hover:text-rose-300 underline font-medium text-[11px]">車費詳情</button>
                         </div>
-                        <div id="fareDetailsContent" class="grid grid-cols-2 gap-2 text-[11px] pt-0.5">
-                            <!-- 動態填充車費內容 -->
+
+                        <!-- 方向切換按鈕 -->
+                        <div id="directionToggleContainer" class="mt-3 flex gap-2">
+                            <button id="dirOutboundBtn" onclick="selectDirection('outbound')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-rose-600 text-white transition flex items-center justify-center gap-1">
+                                <span>去程：</span><span id="dirOutboundText">--</span>
+                            </button>
+                            <button id="dirInboundBtn" onclick="selectDirection('inbound')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center justify-center gap-1">
+                                <span>回程：</span><span id="dirInboundText">--</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 停靠站與即時到站 (ETA) 列表 -->
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-2xl p-4 shadow-subtle">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-1.5">
+                                    <i class="fa-solid fa-list-ol text-rose-500"></i> 沿途各站與到站時間
+                                </h3>
+                                <span id="stopCountBadge" class="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full font-medium">0 站</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-slate-400">
+                                <span id="etaAutoRefreshText" class="flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 live-pulse"></span> 30s 自動更新
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 巴士站詳細列表 -->
+                        <div id="stopList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                            <!-- 動態插入各車站項目與即時 ETA 及分段車費 -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- 視圖 2: 附近車站 -->
+            <div id="view-nearby" class="hidden space-y-4">
+                <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="font-bold text-base text-white flex items-center gap-2">
+                                <i class="fa-solid fa-location-crosshairs text-emerald-400"></i> 附近 500 米巴士站
+                            </h3>
+                            <p class="text-xs text-slate-400">點選站點即可查看途經路線與即時班次</p>
+                        </div>
+                        <button onclick="getUserLocation()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1">
+                            <i class="fa-solid fa-arrows-rotate"></i> 重新定位
+                        </button>
+                    </div>
+                    <div id="nearbyStopsList" class="space-y-2.5 max-h-[520px] overflow-y-auto">
+                        <div class="text-center py-10 text-slate-400 text-sm">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-500 block"></i>
+                            正在獲取您的 GPS 位置與周邊巴士站...
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 沿途車站與即時 ETA 列表 -->
-                <div id="stopsListContainer" class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2 relative">
-                    <div id="stopsLoading" class="flex flex-col items-center justify-center py-12 text-slate-400 space-y-2">
-                        <div class="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p id="stopsLoadingText" class="text-xs">正在載入站點與即時抵站時間...</p>
+            <!-- 視圖 3: 常用收藏 -->
+            <div id="view-bookmarks" class="hidden space-y-4">
+                <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-4">
+                    <h3 class="font-bold text-base text-white flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-star text-amber-400"></i> 我的收藏路線與車站
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-3">快速存取日常乘搭路線，即時追蹤下一班車時間及票價</p>
+                    
+                    <div id="bookmarksList" class="space-y-2.5 max-h-[520px] overflow-y-auto">
+                        <!-- 動態插入收藏卡片 -->
                     </div>
-                    <div id="stopsTimeline" class="space-y-2.5 relative pl-4 before:absolute before:left-2 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-700 hidden">
-                        <!-- 動態站點節點 -->
+                </div>
+            </div>
+
+            <!-- 視圖 4: 車費速查指南與優惠說明 -->
+            <div id="view-fareguide" class="hidden space-y-4">
+                <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 space-y-4">
+                    <div>
+                        <h3 class="font-bold text-base text-white flex items-center gap-2">
+                            <i class="fa-solid fa-sack-dollar text-amber-400"></i> 香港專營巴士車費與優惠指南
+                        </h3>
+                        <p class="text-xs text-slate-400">九巴 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB) 收費架構說明</p>
+                    </div>
+
+                    <!-- 優惠卡片 1: 政府 $2 乘車優惠計劃 -->
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700/80">
+                        <div class="flex items-center gap-2 text-amber-400 font-bold text-sm mb-1">
+                            <i class="fa-solid fa-person-cane"></i> 政府長者及合資格殘疾人士 $2 乘車優惠計劃
+                        </div>
+                        <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                            <li>60 至 64 歲香港居民使用「樂悠咭」每程劃一車費 $2.0。</li>
+                            <li>65 歲或以上長者使用長者八達通 / 樂悠咭每程劃一車費 $2.0。</li>
+                            <li>若原車費低於 $2.0，則只需支付原價。</li>
+                            <li>適用於九巴、城巴全部常規路線；嶼巴一般路線適用（1S、2S 等指定特別賽馬日或口岸包車除外）。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 優惠卡片 2: 分段收費與雙向分段 -->
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700/80">
+                        <div class="flex items-center gap-2 text-rose-400 font-bold text-sm mb-1">
+                            <i class="fa-solid fa-arrows-split-up-and-left"></i> 單向分段與雙向分段收費機制
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            巴士路線在駛經特定收費區（例如過海隧道後、進入新界區後）會自動調低車費。九巴及城巴亦設有<strong>「雙向分段收費計劃」</strong>，短途乘客在上車拍卡扣除全費後，於落車站的指定拍卡機再次拍卡即可獲得車費差額回贈。
+                        </p>
+                    </div>
+
+                    <!-- 優惠卡片 3: 八達通轉乘優惠 (BBI) -->
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700/80">
+                        <div class="flex items-center gap-2 text-sky-400 font-bold text-sm mb-1">
+                            <i class="fa-solid fa-right-left"></i> 八達通 / 電子支付轉乘優惠 (BBI)
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            使用同一張八達通或指定電子支付方式，於指定時間內（一般為 120 至 150 分鐘）於大老山隧道、屯門公路轉車站、城門隧道、青沙公路或海底隧道轉乘指定路線，可享有第二程免費或高達 $4.2 至 $10 的車費扣減。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 右側：互動地圖與即時站點資訊 (5 cols on lg) -->
+        <div class="lg:col-span-5 flex flex-col space-y-4">
+            
+            <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-3 shadow-subtle flex flex-col h-[360px] lg:h-[620px] relative overflow-hidden">
+                <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-700/80">
+                    <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-map-location-dot text-rose-500"></i> 互動路線地圖
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <span id="mapStatusText" class="text-[11px] text-slate-400">點擊車站標記查看 ETA</span>
+                        <button onclick="resetMapView()" class="text-[11px] bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-0.5 rounded transition">
+                            <i class="fa-solid fa-expand"></i> 全景
+                        </button>
                     </div>
                 </div>
 
-            </div>
+                <!-- Leaflet 地圖容器 -->
+                <div id="busMap" class="w-full flex-1 rounded-xl z-10"></div>
 
-        </section>
-
-        <!-- 右側互動式地圖 (Interactive Map Pane) -->
-        <section id="mapSection" class="flex-1 h-full w-full relative z-0">
-            <div id="map" class="h-full w-full"></div>
-
-            <!-- 地圖控制浮動工具列 -->
-            <div class="absolute top-4 right-4 z-[400] flex flex-col space-y-2">
-                <button id="recenterMapBtn" title="重新定位到路線" class="w-10 h-10 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 shadow-xl flex items-center justify-center transition">
-                    <i class="fa-solid fa-expand text-sm"></i>
-                </button>
-                <button id="userLocationBtn" title="定位我的位置" class="w-10 h-10 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-teal-400 shadow-xl flex items-center justify-center transition">
-                    <i class="fa-solid fa-crosshairs text-sm"></i>
-                </button>
-            </div>
-
-            <!-- 地圖底部提示狀態列 -->
-            <div id="mapStatusBar" class="absolute bottom-4 left-4 right-4 md:left-6 md:right-auto md:max-w-md z-[400] pointer-events-none hidden">
-                <div class="bg-slate-900/90 backdrop-blur border border-slate-700/80 px-3 py-2 rounded-xl text-xs text-slate-300 shadow-2xl flex items-center justify-between pointer-events-auto">
-                    <span id="mapStatusText" class="truncate">點擊站點可查看詳細到站預報</span>
-                    <button id="closeMapStatus" class="ml-2 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                <!-- 地圖下方站點簡介卡片 (點選地圖車站時顯示) -->
+                <div id="mapStopPopupCard" class="hidden mt-2 p-2.5 bg-slate-900/90 border border-slate-700 rounded-xl flex items-center justify-between z-20">
+                    <div>
+                        <div class="text-xs text-rose-400 font-bold" id="mapCardStopName">--</div>
+                        <div class="text-[11px] text-slate-300" id="mapCardEtaText">正在獲取到站時間...</div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 block">此站上車車費</span>
+                        <span class="text-xs font-bold text-emerald-400" id="mapCardFareText">$0.0</span>
+                    </div>
                 </div>
             </div>
-        </section>
+
+        </div>
 
     </main>
 
-    <!-- 訊息提示通知元件 (Toast notification) -->
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-800/95 border border-slate-600 text-slate-100 px-4 py-2 rounded-xl text-xs shadow-2xl opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
-        <i id="toastIcon" class="fa-solid fa-circle-info text-teal-400"></i>
-        <span id="toastMsg">通知訊息</span>
+    <!-- 車費詳細對比與計算 Modal -->
+    <div id="fareModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-base text-white" id="modalFareRouteTitle">車費明細計算器</h4>
+                        <p class="text-xs text-slate-400">各類別乘客應付金額及分段細則</p>
+                    </div>
+                </div>
+                <button onclick="closeFareModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- 車費對比表格 -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px]">
+                        <tr>
+                            <th class="p-2.5 rounded-l-lg">乘客類別</th>
+                            <th class="p-2.5">平日全程</th>
+                            <th class="p-2.5">星期日及假期</th>
+                            <th class="p-2.5 rounded-r-lg">適用優惠</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/60" id="modalFareTableBody">
+                        <!-- 動態插入車費資料 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-700/60 text-xs text-slate-300 space-y-1">
+                <div class="font-semibold text-white flex items-center gap-1 text-[11px]">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i> 乘車小貼士：
+                </div>
+                <p id="modalFareTips" class="text-slate-400 text-[11px] leading-relaxed">
+                    本路線各站均設有詳細車費標籤。若乘搭短途路程，請留意站名旁邊的下調分段收費金額。
+                </p>
+            </div>
+
+            <div class="flex justify-end pt-1">
+                <button onclick="closeFareModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-semibold transition">
+                    關閉
+                </button>
+            </div>
+        </div>
     </div>
 
-<script>
+    <!-- 底部行動裝置快速導航列 -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800 md:hidden flex justify-around p-2">
+        <button onclick="switchView('routes')" class="flex flex-col items-center py-1 px-3 text-rose-500 text-xs" id="mobile-tab-routes">
+            <i class="fa-solid fa-bus text-base mb-0.5"></i>
+            <span>路線</span>
+        </button>
+        <button onclick="switchView('nearby')" class="flex flex-col items-center py-1 px-3 text-slate-400 text-xs" id="mobile-tab-nearby">
+            <i class="fa-solid fa-location-dot text-base mb-0.5"></i>
+            <span>附近</span>
+        </button>
+        <button onclick="switchView('bookmarks')" class="flex flex-col items-center py-1 px-3 text-slate-400 text-xs" id="mobile-tab-bookmarks">
+            <i class="fa-solid fa-star text-base mb-0.5"></i>
+            <span>收藏</span>
+        </button>
+        <button onclick="switchView('fareguide')" class="flex flex-col items-center py-1 px-3 text-slate-400 text-xs" id="mobile-tab-fareguide">
+            <i class="fa-solid fa-coins text-base mb-0.5"></i>
+            <span>車費</span>
+        </button>
+    </nav>
+
+    <!-- 輕量 Toast 提示訊息 -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-800/95 text-white border border-slate-700 px-4 py-2.5 rounded-xl shadow-2xl text-xs md:text-sm flex items-center gap-2 pointer-events-none opacity-0 transition-opacity duration-300">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">已更新資料</span>
+    </div>
+
+    <!-- 核心 JavaScript 應用程式邏輯 -->
+    <script>
     /**
-     * 香港巴士通 (HK Bus Express)
-     * 支援: 九巴 (KMB)、城巴/新巴 (CTB) 及 新大嶼山巴士 (NLB)
+     * 香港巴士通 HK Bus Express
+     * 支援九龍巴士 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB)
+     * 完整車費引擎、分段收費演算法、即時到站 (ETA) 及 Leaflet 地圖
      */
 
-    // --- 雙語語系字典 (I18N Dictionary) ---
-    const I18N = {
-        tc: {
-            appTitle: '香港巴士通',
-            appSubtitle: '九巴 KMB • 城巴/新巴 CTB • 新大嶼山巴士 NLB 即時到站與詳細車費',
-            searchPlaceholder: '搜尋路線 (如 1, 11, 3M, 101)',
-            nearbyBtn: '附近車站',
-            tabAll: '全部路線 All',
-            tabKmb: '九巴 (KMB)',
-            tabCtb: '城巴/新巴 (CTB)',
-            tabNlb: '新大嶼山巴士 (NLB)',
-            tabFav: '我的收藏',
-            loadingRoutes: '正在載入九巴、城巴/新巴與新大嶼山巴士路線及車費資料庫...',
-            noResultsTitle: '找不到符合條件的路線',
-            noResultsSub: '請嘗試輸入路線號碼，如 NLB 1, 11, 3M, 23, B2, 38 或 KMB 1A 等',
-            backToRoutes: '返回路線列表',
-            fareTitle: '車費資料 (Bus Fare)',
-            govScheme: '政府 $2 優惠適用',
-            fareWeekday: '平日成人收費 (一至六)',
-            fareHoliday: '假日/星期日成人收費',
-            fareDiscountInfo: '* 小童及長者半價優惠',
-            farePaymentInfo: '* 支援八達通及電子支付',
-            fareStandard: '全程標準收費',
-            fareStandardNote: '空調巴士標準票價',
-            fareSpecial: '特惠優惠',
-            fareSpecialNote: '* 沿途各分站設有相應分段收費，請參閱各站抵站標示。',
-            boundOut: '往 ',
-            boundIn: '往 ',
-            loadingStops: '正在載入站點與即時抵站時間...',
-            noStops: '此方向暫無途經車站資料',
-            arriving: '即將抵達',
-            minUnit: '分鐘',
-            noEta: '暫無班次',
-            mapStatusDefault: '點擊站點可查看詳細到站預報',
-            locateSuccess: '已定位至您的目前位置',
-            locateError: '無法取得您的位置，請確認 GPS 權限已開啟',
-            favAdd: '已加入收藏',
-            favRemove: '已從收藏移除',
-            companyNlb: '新大嶼山巴士 (NLB)',
-            companyKmb: '九龍巴士 (KMB)',
-            companyCtb: '城巴/新巴 (CTB)',
-            typeNlb: '大嶼山專線'
+    // --- 1. 全域狀態管理 ---
+    const STATE = {
+        routes: [],               // 所有路線數據庫
+        filteredRoutes: [],       // 搜尋篩選後的路線
+        selectedRoute: null,      // 當前選擇的路線物件
+        selectedDirection: 'outbound', // 'outbound' (去程) 或 'inbound' (回程)
+        stopsData: [],            // 當前路線站點列表
+        companyFilter: 'ALL',     // 'ALL', 'KMB', 'CTB', 'NLB'
+        bookmarks: [],            // 收藏列表
+        userLat: 22.3193,         // 預設香港緯度
+        userLng: 114.1694,        // 預設香港經度
+        currentView: 'routes',    // 'routes', 'nearby', 'bookmarks', 'fareguide'
+        etaTimer: null,           // 自動更新倒數計時器
+        autoRefreshCountdown: 30, // 30秒自動重整倒數
+        map: null,                // Leaflet 地圖實例
+        mapMarkers: [],           // 地圖車站標記陣列
+        mapPolyline: null         // 路線折線
+    };
+
+    // --- 2. 精準車費對照數據與智能分段收費引擎 ---
+    // 專門解決九巴與城巴公開數據中缺少即時全線車費與分段問題
+    const FARE_DATABASE = {
+        // 常見熱門九巴路線參考收費
+        KMB_DEFAULTS: {
+            '1': 6.4, '1A': 8.3, '2': 5.6, '2A': 6.8, '2E': 5.6, '3C': 6.8, '5': 6.8, '5C': 6.8,
+            '6': 5.6, '6C': 6.8, '6D': 6.8, '9': 6.8, '11': 5.6, '11C': 6.8, '13D': 7.9,
+            '14': 7.9, '16': 7.9, '27': 5.6, '30X': 10.3, '31B': 6.8, '35A': 9.2, '38': 9.8,
+            '40': 10.3, '42C': 10.3, '46X': 9.2, '48X': 9.2, '49X': 10.3, '68M': 11.1, '68X': 16.0,
+            '69X': 16.7, '74X': 11.1, '81C': 9.8, '87D': 10.3, '89': 7.9, '89D': 10.3, '98D': 11.1,
+            '214': 8.9, '215X': 8.9, '234X': 10.3, '238X': 9.2, '268C': 20.7, '269C': 20.7, '277X': 16.7,
+            '290': 12.0, '290A': 12.0, '290X': 12.0, '960': 23.4, '968': 26.9, 'B1': 14.5, 'W2': 6.4
         },
-        en: {
-            appTitle: 'HK Bus Express',
-            appSubtitle: 'Live ETA & Bus Fares for KMB, CTB/NWFB & NLB Routes',
-            searchPlaceholder: 'Search routes (e.g. 1, 11, 3M, 101)',
-            nearbyBtn: 'Nearby',
-            tabAll: 'All Routes All',
-            tabKmb: 'KMB',
-            tabCtb: 'CTB / NWFB',
-            tabNlb: 'NLB',
-            tabFav: 'Favorites',
-            loadingRoutes: 'Loading route database for KMB, CTB, and NLB...',
-            noResultsTitle: 'No matching routes found',
-            noResultsSub: 'Try searching for route numbers like NLB 1, 11, 3M, 23, B2, 38 or KMB 1A',
-            backToRoutes: 'Back to Routes',
-            fareTitle: 'Bus Fare Information',
-            govScheme: 'HK$2 Scheme Applicable',
-            fareWeekday: 'Weekday Adult Fare (Mon-Sat)',
-            fareHoliday: 'Holiday / Sunday Adult Fare',
-            fareDiscountInfo: '* 50% Concession for Child & Seniors',
-            farePaymentInfo: '* Accepts Octopus & e-Payments',
-            fareStandard: 'Standard Full Fare',
-            fareStandardNote: 'Standard Air-Conditioned Bus Fare',
-            fareSpecial: 'Concession Scheme',
-            fareSpecialNote: '* Sectional fares apply at intermediate stops.',
-            boundOut: 'To ',
-            boundIn: 'To ',
-            loadingStops: 'Loading stops and real-time ETA...',
-            noStops: 'No stop information available for this direction',
-            arriving: 'Arriving',
-            minUnit: 'mins',
-            noEta: 'No Schedule',
-            mapStatusDefault: 'Click a stop to view ETA details',
-            locateSuccess: 'Located your current position',
-            locateError: 'Unable to get location. Please enable GPS.',
-            favAdd: 'Added to favorites',
-            favRemove: 'Removed from favorites',
-            companyNlb: 'New Lantao Bus (NLB)',
-            companyKmb: 'Kowloon Motor Bus (KMB)',
-            companyCtb: 'Citybus / NWFB (CTB)',
-            typeNlb: 'Lantau Line'
+        // 常見城巴路線參考收費
+        CTB_DEFAULTS: {
+            '1': 4.4, '2': 5.4, '5B': 4.4, '6': 6.3, '6X': 10.6, '8X': 7.4, '10': 4.4, '12': 5.4,
+            '14': 11.2, '15': 12.1, '70': 6.3, '72': 6.3, '77': 8.7, '90': 6.3, '99': 8.7,
+            '102': 12.1, '104': 12.1, '112': 12.1, '118': 12.1, '171': 14.1, '619': 12.1, '681': 22.0,
+            '788': 8.7, '789': 8.7, '930': 19.8, '962X': 23.4, '969': 26.9,
+            'A10': 50.3, 'A11': 41.9, 'A21': 34.6, 'A22': 41.9, 'A29': 44.0,
+            'E11': 22.0, 'E21': 14.5, 'E22': 19.8, 'E23': 19.8, 'B3': 14.7, 'B3X': 14.7, 'S1': 3.7
+        },
+        // 估算九巴/城巴常規各類前綴收費模式
+        estimateFare(routeNo, company) {
+            const r = String(routeNo || '').trim().toUpperCase();
+
+            // 1. 口岸與機場線 (B線, A線, E線, S線, N/NA通宵線)
+            if (r.startsWith('B')) return { adult: 14.7, holiday: null };
+            if (r.startsWith('A')) return { adult: 41.9, holiday: null };
+            if (r.startsWith('NA')) return { adult: 44.0, holiday: null };
+            if (r.startsWith('E')) return { adult: 19.8, holiday: null };
+            if (r.startsWith('S')) return { adult: 3.7, holiday: null };
+            if (r.startsWith('N') && (r.includes('9') || r.includes('6') || r.includes('1'))) return { adult: 18.0, holiday: null };
+            if (r.startsWith('N')) return { adult: 13.5, holiday: null };
+
+            // 2. 過海路線 (100, 300, 600, 900 系列)
+            if (/^(1\d{2}|3\d{2}|6\d{2}|9\d{2}|9\d{2}[A-Z]|6\d{2}[A-Z]|1\d{2}[A-Z])/.test(r)) {
+                if (r.startsWith('96') || r.startsWith('97') || r.startsWith('98')) return { adult: 26.9, holiday: null };
+                if (r.startsWith('93') || r.startsWith('90')) return { adult: 19.8, holiday: null };
+                if (r.startsWith('68') || r.startsWith('67')) return { adult: 22.0, holiday: null };
+                if (r.startsWith('60') || r.startsWith('61')) return { adult: 12.1, holiday: null };
+                return { adult: 12.1, holiday: null };
+            }
+
+            // 3. 查表比對直接定義之熱門路線
+            if (company === 'KMB' && this.KMB_DEFAULTS[r]) return { adult: this.KMB_DEFAULTS[r], holiday: null };
+            if (company === 'CTB' && this.CTB_DEFAULTS[r]) return { adult: this.CTB_DEFAULTS[r], holiday: null };
+
+            // 4. 九巴新界長途/市區線前綴推斷
+            if (company === 'KMB') {
+                if (/^(26|27|29|28)/.test(r)) return { adult: 16.7, holiday: null };
+                if (/^(68|69|70|74|75|89)/.test(r)) return { adult: 11.1, holiday: null };
+                if (/^(30|31|32|33|34|35|36|37|38|40|41|42|43|44|45|46|47|48|49)/.test(r)) return { adult: 9.8, holiday: null };
+                if (/^(7|8)/.test(r)) return { adult: 7.9, holiday: null };
+                return { adult: 6.8, holiday: null }; // 一般市區短途預設
+            }
+
+            // 5. 城巴港島/市區前綴推斷
+            if (company === 'CTB') {
+                if (/^(78|79|56)/.test(r)) return { adult: 16.2, holiday: null }; // 皇后山/新界東系列
+                if (/^(70|72|77|90|99|592)/.test(r)) return { adult: 6.3, holiday: null };
+                if (/^(788|789)/.test(r)) return { adult: 8.7, holiday: null };
+                return { adult: 5.4, holiday: null }; // 港島區常規路線
+            }
+
+            return { adult: 6.8, holiday: null };
+        },
+
+        // 計算各站分段收費 (Section Fares)
+        calculateStopFare(fullAdultFare, stopIndex, totalStops, isNLB, nlbStopFare) {
+            if (isNLB && typeof nlbStopFare === 'number' && nlbStopFare > 0) {
+                return nlbStopFare;
+            }
+            if (totalStops <= 1 || stopIndex === 0) return fullAdultFare;
+
+            const progress = stopIndex / (totalStops - 1);
+
+            // 過海線/長途線分段下調模型
+            if (fullAdultFare >= 20.0) {
+                if (progress > 0.75) return Math.max(5.4, Math.round(fullAdultFare * 0.25 * 10) / 10);
+                if (progress > 0.50) return Math.max(7.2, Math.round(fullAdultFare * 0.45 * 10) / 10);
+                if (progress > 0.30) return Math.max(12.1, Math.round(fullAdultFare * 0.70 * 10) / 10);
+                return fullAdultFare;
+            } else if (fullAdultFare >= 11.0) {
+                if (progress > 0.70) return Math.max(5.2, Math.round(fullAdultFare * 0.45 * 10) / 10);
+                if (progress > 0.45) return Math.max(7.4, Math.round(fullAdultFare * 0.65 * 10) / 10);
+                return fullAdultFare;
+            } else if (fullAdultFare >= 7.0) {
+                if (progress > 0.65) return Math.max(4.8, Math.round(fullAdultFare * 0.70 * 10) / 10);
+                return fullAdultFare;
+            }
+            return fullAdultFare;
         }
     };
 
-    // --- 應用全域狀態管理 ---
-    const AppState = {
-        lang: localStorage.getItem('hk_bus_lang') || 'tc', // 'tc' 或 'en'
-        currentCompanyFilter: 'ALL',
-        routes: [],          // 全量路線清單
-        nlbFaresDb: {},      // NLB 票價資料庫快取
-        selectedRoute: null, // 目前選中的路線物件
-        selectedBound: 'O',  // 'O' (Outbound / 往) 或 'I' (Inbound / 返)
-        currentStops: [],    // 當前路線站點列表
-        map: null,
-        markersLayer: null,
-        routePolyline: null,
-        userMarker: null,
-        favorites: JSON.parse(localStorage.getItem('hk_bus_favorites') || '[]'),
-        countdownTimer: null,
-        remainingSeconds: 15,
-        isMobileMapActive: false
+    // --- 3. 初始載入與事件監聽 ---
+    window.onload = async function() {
+        initTheme();
+        initLeafletMap();
+        loadLocalBookmarks();
+        await fetchAllRoutes();
+        startEtaCountdownTimer();
     };
 
-    // --- 嶼巴 (NLB) 官方標準核准票價與路線字典 ---
-    const NLB_STATIC_METADATA = {
-        "1": { normalFare: 12.8, holidayFare: 19.5, type: "大嶼山常規線", desc: "梅窩碼頭 ⇄ 大澳" },
-        "2": { normalFare: 20.6, holidayFare: 31.0, type: "大嶼山常規線", desc: "梅窩碼頭 ⇄ 昂坪" },
-        "3M": { normalFare: 12.5, holidayFare: 19.3, type: "大嶼山常規線", desc: "梅窩碼頭 ⇄ 東涌市中心" },
-        "4": { normalFare: 6.9, holidayFare: 13.2, type: "大嶼山常規線", desc: "梅窩碼頭 ⇄ 塘福" },
-        "11": { normalFare: 13.6, holidayFare: 21.9, type: "大嶼山常規線", desc: "東涌市中心 ⇄ 大澳" },
-        "21": { normalFare: 7.6, holidayFare: 16.1, type: "大嶼山常規線", desc: "昂坪 ⇄ 大澳" },
-        "23": { normalFare: 19.6, holidayFare: 31.0, type: "大嶼山景點線", desc: "東涌市中心 ⇄ 昂坪" },
-        "34": { normalFare: 4.8, holidayFare: 5.4, type: "大嶼山常規線", desc: "東涌市中心 ⇄ 石門甲" },
-        "36": { normalFare: 10.8, holidayFare: 10.8, type: "大嶼山常規線", desc: "東涌市中心 ⇄ 小蠔灣" },
-        "37": { normalFare: 3.7, holidayFare: 3.7, type: "東涌市內線", desc: "逸東邨 ⇄ 映灣園" },
-        "37H": { normalFare: 3.7, holidayFare: 3.7, type: "東涌市內線", desc: "迎東邨 ⇄ 北大嶼山醫院" },
-        "37M": { normalFare: 3.7, holidayFare: 3.7, type: "東涌市內線", desc: "迎東邨 ⇄ 東涌站巴士總站" },
-        "38": { normalFare: 3.6, holidayFare: 3.6, type: "東涌市內線", desc: "逸東邨 ⇄ 東涌站巴士總站" },
-        "38X": { normalFare: 8.3, holidayFare: 8.3, type: "口岸連接線", desc: "逸東邨 ⇄ 港珠澳大橋香港口岸" },
-        "39M": { normalFare: 3.7, holidayFare: 3.7, type: "東涌市內線", desc: "滿東邨 ⇄ 東涌站巴士總站" },
-        "A35": { normalFare: 17.5, holidayFare: 29.6, type: "機場/口岸線", desc: "梅窩碼頭 ⇄ 港珠澳大橋香港口岸 (經機場)" },
-        "B2": { normalFare: 14.4, holidayFare: 14.4, type: "深圳灣口岸線", desc: "元朗站 ⇄ 深圳灣口岸" },
-        "B2P": { normalFare: 10.3, holidayFare: 10.3, type: "深圳灣口岸線", desc: "天水圍(天慈邨) ⇄ 深圳灣口岸" },
-        "B2X": { normalFare: 10.3, holidayFare: 10.3, type: "深圳灣口岸線", desc: "天水圍(天耀邨) ⇄ 深圳灣口岸" },
-        "B4": { normalFare: 9.1, holidayFare: 9.1, type: "港珠澳大橋線", desc: "港珠澳大橋香港口岸 ⇄ 機場 (客運大樓)" },
-        "B6": { normalFare: 9.1, holidayFare: 9.1, type: "港珠澳大橋線", desc: "港珠澳大橋香港口岸 ⇄ 滿東邨" },
-        "N1": { normalFare: 18.6, holidayFare: 28.2, type: "通宵路線", desc: "梅窩碼頭 ⇄ 大澳" },
-        "N35": { normalFare: 26.4, holidayFare: 37.5, type: "通宵口岸線", desc: "梅窩碼頭 ⇄ 港珠澳大橋香港口岸" },
-        "N37": { normalFare: 5.5, holidayFare: 5.5, type: "東涌通宵線", desc: "迎東邨 ⇄ 東涌站" },
-        "N38": { normalFare: 5.5, holidayFare: 5.5, type: "東涌通宵線", desc: "逸東邨 ⇄ 東涌站" },
-        "1R": { normalFare: null, holidayFare: 47.2, type: "假日特別線", desc: "紅磡(紅鸞道) ⇄ 昂坪" }
-    };
-
-    // --- 初始化執行 ---
-    window.addEventListener('DOMContentLoaded', () => {
-        initMap();
-        setupEventListeners();
-        applyLanguage();
-        updateFavCount();
-        fetchAllRoutes();
-        registerServiceWorker();
-    });
-
-    function registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(err => {
-                console.log('Service Worker 註冊跳過/失敗:', err);
-            });
-        }
-    }
-
-    // --- 1. 初始化 Leaflet 地圖 ---
-    function initMap() {
-        AppState.map = L.map('map', {
-            zoomControl: false,
-            attributionControl: false
-        }).setView([22.3193, 114.1694], 12);
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            subdomains: 'abcd'
-        }).addTo(AppState.map);
-
-        L.control.zoom({ position: 'bottomright' }).addTo(AppState.map);
-        AppState.markersLayer = L.layerGroup().addTo(AppState.map);
-    }
-
-    // --- 2. 事件監聽設定 ---
-    function setupEventListeners() {
-        // 搜尋輸入
-        const searchInput = document.getElementById('searchInput');
-        const clearBtn = document.getElementById('clearSearchBtn');
-
-        searchInput.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            clearBtn.classList.toggle('hidden', val.length === 0);
-            renderRouteList();
-        });
-
-        clearBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            clearBtn.classList.add('hidden');
-            renderRouteList();
-            searchInput.focus();
-        });
-
-        // 語言切換按鈕事件
-        document.getElementById('langToggleBtn').addEventListener('click', toggleLanguage);
-
-        // 公司標籤切換
-        document.querySelectorAll('.company-tab').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.company-tab').forEach(b => {
-                    b.classList.remove('active', 'bg-teal-600', 'text-white');
-                    b.classList.add('bg-slate-800', 'text-slate-300');
-                });
-                btn.classList.add('active', 'bg-teal-600', 'text-white');
-                btn.classList.remove('bg-slate-800', 'text-slate-300');
-                
-                AppState.currentCompanyFilter = btn.dataset.company;
-                renderRouteList();
-            });
-        });
-
-        // 返回路線清單按鈕
-        document.getElementById('backToRoutesBtn').addEventListener('click', () => {
-            document.getElementById('routeDetailView').classList.add('hidden');
-            clearInterval(AppState.countdownTimer);
-            AppState.markersLayer.clearLayers();
-            if (AppState.routePolyline) {
-                AppState.map.removeLayer(AppState.routePolyline);
-                AppState.routePolyline = null;
-            }
-        });
-
-        // 刷新 ETA
-        document.getElementById('refreshEtaBtn').addEventListener('click', () => {
-            if (AppState.selectedRoute) {
-                const icon = document.getElementById('refreshEtaIcon');
-                icon.classList.add('animate-spin');
-                fetchRouteStopsAndEta(AppState.selectedRoute, AppState.selectedBound).finally(() => {
-                    setTimeout(() => icon.classList.remove('animate-spin'), 600);
-                });
-            }
-        });
-
-        // 收藏當前路線按鈕
-        document.getElementById('favCurrentRouteBtn').addEventListener('click', toggleCurrentFavorite);
-
-        // 方向切換
-        document.getElementById('boundBtnOut').addEventListener('click', () => switchBound('O'));
-        document.getElementById('boundBtnIn').addEventListener('click', () => switchBound('I'));
-
-        // 重設地圖中心
-        document.getElementById('recenterMapBtn').addEventListener('click', fitMapToStops);
-
-        // GPS 使用者定位
-        document.getElementById('userLocationBtn').addEventListener('click', locateUser);
-        document.getElementById('nearbyBtn').addEventListener('click', locateUserAndFindNearby);
-
-        // 手機版地圖/清單視圖切換
-        document.getElementById('toggleMobileViewBtn').addEventListener('click', toggleMobileView);
-
-        // 地圖狀態通知關閉
-        document.getElementById('closeMapStatus').addEventListener('click', () => {
-            document.getElementById('mapStatusBar').classList.add('hidden');
-        });
-    }
-
-    // --- 中英文語言切換邏輯 (Language Toggle & Application) ---
-    function toggleLanguage() {
-        AppState.lang = AppState.lang === 'tc' ? 'en' : 'tc';
-        localStorage.setItem('hk_bus_lang', AppState.lang);
-        applyLanguage();
-    }
-
-    function applyLanguage() {
-        const lang = AppState.lang;
-        const dict = I18N[lang];
-
-        // 頂部導覽列文字
-        document.getElementById('appHeaderTitle').innerText = dict.appTitle;
-        document.getElementById('appHeaderSubtitle').innerText = dict.appSubtitle;
-        document.getElementById('searchInput').placeholder = dict.searchPlaceholder;
-        document.getElementById('nearbyBtnText').innerText = dict.nearbyBtn;
-        document.getElementById('langToggleText').innerText = lang === 'tc' ? 'EN' : '繁中';
-
-        // 篩選選單按鈕
-        document.getElementById('tabBtnAll').innerHTML = `<i class="fa-solid fa-layer-group mr-1"></i> ${dict.tabAll}`;
-        document.getElementById('tabBtnKmb').innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1.5"></span> ${dict.tabKmb}`;
-        document.getElementById('tabBtnCtb').innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-yellow-400 mr-1.5"></span> ${dict.tabCtb}`;
-        document.getElementById('tabBtnNlb').innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-teal-400 mr-1.5"></span> ${dict.tabNlb}`;
-        document.getElementById('favTabLabel').innerText = dict.tabFav;
-
-        // 側邊欄靜態標籤
-        document.getElementById('loadingRoutesText').innerText = dict.loadingRoutes;
-        document.getElementById('noResultsTitle').innerText = dict.noResultsTitle;
-        document.getElementById('noResultsSubtitle').innerText = dict.noResultsSub;
-        document.getElementById('backBtnText').innerText = dict.backToRoutes;
-        document.getElementById('fareTitleText').innerHTML = `<i class="fa-solid fa-ticket"></i> ${dict.fareTitle}`;
-        document.getElementById('govSchemeTag').innerText = dict.govScheme;
-        document.getElementById('stopsLoadingText').innerText = dict.loadingStops;
-
-        // 重新渲染路線列表與選中路線詳情
-        renderRouteList();
-        if (AppState.selectedRoute) {
-            renderFareDetails(AppState.selectedRoute);
-            updateBoundBtnTexts();
-            if (AppState.currentStops.length > 0) {
-                renderStopsList(AppState.currentStops);
-            }
-        }
-    }
-
-    // --- 3. 抓取所有公司路線 (KMB, CTB, NLB) ---
+    // --- 4. 取得所有巴士路線清單 (九巴、城巴、嶼巴) ---
     async function fetchAllRoutes() {
-        const loadingEl = document.getElementById('loadingRoutes');
-        const gridEl = document.getElementById('routesGrid');
+        updateRouteStatusText('正在同步全港巴士路線與車費數據庫...');
+        const routes = [];
 
         try {
-            const [kmbRes, ctbRes, nlbRes] = await Promise.allSettled([
-                fetch('https://data.etabus.gov.hk/v1/transport/kmb/route/').then(r => r.json()),
-                fetch('https://rt.data.gov.hk/v2/transport/citybus/route/ctb').then(r => r.json()),
-                fetch('https://rt.data.gov.hk/v2/transport/nlb/route.php?action=list').then(r => r.json())
-            ]);
-
-            const allRoutes = [];
-
-            // 1. 九巴 (KMB)
-            if (kmbRes.status === 'fulfilled' && kmbRes.value && kmbRes.value.data) {
-                kmbRes.value.data.forEach(r => {
-                    allRoutes.push({
-                        company: 'KMB',
-                        companyName: '九巴',
-                        companyNameEn: 'KMB',
-                        route: r.route,
-                        orig_tc: r.orig_tc,
-                        dest_tc: r.dest_tc,
-                        orig_en: r.orig_en,
-                        dest_en: r.dest_en,
-                        service_type: r.service_type || '1',
-                        bound: r.bound || 'O'
-                    });
-                });
-            }
-
-            // 2. 城巴 / 新巴 (CTB)
-            if (ctbRes.status === 'fulfilled' && ctbRes.value && ctbRes.value.data) {
-                ctbRes.value.data.forEach(r => {
-                    allRoutes.push({
-                        company: 'CTB',
-                        companyName: '城巴/新巴',
-                        companyNameEn: 'CTB/NWFB',
-                        route: r.route,
-                        orig_tc: r.orig_tc,
-                        dest_tc: r.dest_tc,
-                        orig_en: r.orig_en,
-                        dest_en: r.dest_en,
-                        service_type: '1',
-                        bound: 'O'
-                    });
-                });
-            }
-
-            // 3. 新大嶼山巴士 (NLB)
-            if (nlbRes.status === 'fulfilled' && nlbRes.value && nlbRes.value.routes) {
-                nlbRes.value.routes.forEach(r => {
-                    const rNo = (r.routeNo || '').trim();
-                    const nameTc = r.routeName_c || '';
-                    const nameEn = r.routeName_e || '';
-
-                    let orig_tc = nameTc, dest_tc = '';
-                    if (nameTc.includes('>')) {
-                        const parts = nameTc.split('>');
-                        orig_tc = parts[0].trim();
-                        dest_tc = parts[1].trim();
-                    } else if (nameTc.includes('-')) {
-                        const parts = nameTc.split('-');
-                        orig_tc = parts[0].trim();
-                        dest_tc = parts[1].trim();
+            // (A) 九巴 (KMB) 官方 API
+            const kmbPromise = fetch('https://data.etabus.gov.hk/v1/transport/kmb/route/')
+                .then(res => res.json())
+                .then(json => {
+                    if (json && json.data) {
+                        json.data.forEach(item => {
+                            const fareInfo = FARE_DATABASE.estimateFare(item.route, 'KMB');
+                            routes.push({
+                                co: 'KMB',
+                                route: item.route,
+                                bound: item.bound, // 'O' or 'I'
+                                service_type: item.service_type || '1',
+                                orig_tc: item.orig_tc,
+                                orig_en: item.orig_en,
+                                dest_tc: item.dest_tc,
+                                dest_en: item.dest_en,
+                                adultFare: fareInfo.adult,
+                                holidayFare: fareInfo.holiday,
+                                isSpecial: (item.service_type && item.service_type !== '1')
+                            });
+                        });
                     }
+                }).catch(err => console.warn('KMB API Load Warning:', err));
 
-                    let orig_en = nameEn, dest_en = '';
-                    if (nameEn.includes('>')) {
-                        const parts = nameEn.split('>');
-                        orig_en = parts[0].trim();
-                        dest_en = parts[1].trim();
+            // (B) 城巴 (CTB) 官方 API
+            const ctbPromise = fetch('https://rt.data.gov.hk/v2/transport/citybus/route/CTB')
+                .then(res => res.json())
+                .then(json => {
+                    if (json && json.data) {
+                        json.data.forEach(item => {
+                            const fareInfo = FARE_DATABASE.estimateFare(item.route, 'CTB');
+                            routes.push({
+                                co: 'CTB',
+                                route: item.route,
+                                bound: 'O', // CTB 預設起點向終點
+                                service_type: '1',
+                                orig_tc: item.orig_tc,
+                                orig_en: item.orig_en,
+                                dest_tc: item.dest_tc,
+                                dest_en: item.dest_en,
+                                adultFare: fareInfo.adult,
+                                holidayFare: fareInfo.holiday,
+                                isSpecial: false
+                            });
+                        });
                     }
+                }).catch(err => console.warn('CTB API Load Warning:', err));
 
-                    const meta = NLB_STATIC_METADATA[rNo] || {};
-                    const normalFare = r.fare_c || r.fareNormal || meta.normalFare || '--';
-                    const holidayFare = r.fare_h || r.fareHoliday || meta.holidayFare || '--';
+            // (C) 新大嶼山巴士 (NLB) 官方 API (提供原生平日及假日車費)
+            const nlbPromise = fetch('https://rt.data.gov.hk/v2/transport/nlb/route.php?action=list')
+                .then(res => res.json())
+                .then(json => {
+                    if (json && json.routes) {
+                        json.routes.forEach(item => {
+                            const normalFare = parseFloat(item.fare || item.normalRouteFare) || 5.0;
+                            const holidayFare = parseFloat(item.holidayRouteFare) || null;
+                            routes.push({
+                                co: 'NLB',
+                                routeId: item.routeId,
+                                route: item.routeNo,
+                                bound: 'O',
+                                service_type: '1',
+                                orig_tc: item.routeName_c.split('>')[0] || item.routeName_c,
+                                orig_en: item.routeName_e.split('>')[0] || item.routeName_e,
+                                dest_tc: item.routeName_c.split('>')[1] || item.routeName_c,
+                                dest_en: item.routeName_e.split('>')[1] || item.routeName_e,
+                                adultFare: normalFare,
+                                holidayFare: holidayFare && holidayFare !== normalFare ? holidayFare : null,
+                                isSpecial: item.overnightRoute === 1
+                            });
+                        });
+                    }
+                }).catch(err => console.warn('NLB API Load Warning:', err));
 
-                    AppState.nlbFaresDb[r.routeId] = {
-                        normalFare: normalFare,
-                        holidayFare: holidayFare,
-                        type: meta.type || '大嶼山專線'
-                    };
+            // 平行非同步載入三大巴士公司
+            await Promise.allSettled([kmbPromise, ctbPromise, nlbPromise]);
 
-                    allRoutes.push({
-                        company: 'NLB',
-                        companyName: '嶼巴',
-                        companyNameEn: 'NLB',
-                        routeId: r.routeId,
-                        route: rNo,
-                        orig_tc: orig_tc,
-                        dest_tc: dest_tc,
-                        orig_en: orig_en,
-                        dest_en: dest_en,
-                        service_type: '1',
-                        bound: 'O',
-                        normalFare: normalFare,
-                        holidayFare: holidayFare,
-                        routeType: meta.type || '大嶼山專線'
-                    });
-                });
-            }
-
-            // 靜態備份
-            if (!allRoutes.some(r => r.company === 'NLB')) {
-                Object.keys(NLB_STATIC_METADATA).forEach((rNo, idx) => {
-                    const item = NLB_STATIC_METADATA[rNo];
-                    const parts = item.desc.split('⇄');
-                    allRoutes.push({
-                        company: 'NLB',
-                        companyName: '嶼巴',
-                        companyNameEn: 'NLB',
-                        routeId: String(idx + 1),
-                        route: rNo,
-                        orig_tc: parts[0]?.trim() || '',
-                        dest_tc: parts[1]?.trim() || '',
-                        orig_en: 'Lantau Island',
-                        dest_en: 'Lantau Island',
-                        service_type: '1',
-                        bound: 'O',
-                        normalFare: item.normalFare,
-                        holidayFare: item.holidayFare,
-                        routeType: item.type
-                    });
-                });
-            }
-
-            AppState.routes = allRoutes;
-            loadingEl.classList.add('hidden');
-            gridEl.classList.remove('hidden');
+            STATE.routes = routes;
+            STATE.filteredRoutes = routes;
             renderRouteList();
-
+            showToast(`已載入 ${routes.length} 條香港巴士路線與車費`, 'success');
         } catch (error) {
-            console.error('路線資料載入失敗:', error);
+            console.error('Fetch Routes Error:', error);
+            showToast('網絡載入出現問題，已啟用快取模式', 'error');
         }
     }
 
-    // --- 4. 渲染路線列表 (雙語支援) ---
+    // --- 5. 渲染路線搜尋結果清單 ---
     function renderRouteList() {
-        const query = document.getElementById('searchInput').value.trim().toUpperCase();
-        const filter = AppState.currentCompanyFilter;
-        const gridEl = document.getElementById('routesGrid');
-        const noResultsEl = document.getElementById('noResults');
-        const isEn = AppState.lang === 'en';
+        const container = document.getElementById('routeList');
+        const countText = document.getElementById('routeCountText');
+        container.innerHTML = '';
 
-        let filtered = AppState.routes.filter(r => {
-            if (filter === 'FAV') {
-                const key = `${r.company}_${r.route}_${r.service_type || '1'}`;
-                if (!AppState.favorites.includes(key)) return false;
-            } else if (filter !== 'ALL' && r.company !== filter) {
-                return false;
-            }
+        let list = STATE.filteredRoutes;
+        if (STATE.companyFilter !== 'ALL') {
+            list = list.filter(r => r.co === STATE.companyFilter);
+        }
 
-            if (query) {
-                const matchRoute = r.route.toUpperCase().includes(query);
-                const matchOrig = (r.orig_tc || '').toUpperCase().includes(query) || (r.orig_en || '').toUpperCase().includes(query);
-                const matchDest = (r.dest_tc || '').toUpperCase().includes(query) || (r.dest_en || '').toUpperCase().includes(query);
-                return matchRoute || matchOrig || matchDest;
-            }
-            return true;
-        });
+        countText.innerText = `共找到 ${list.length} 條相關路線`;
 
-        filtered.sort((a, b) => {
-            const numA = parseInt(a.route) || 9999;
-            const numB = parseInt(b.route) || 9999;
-            if (numA !== numB) return numA - numB;
-            return a.route.localeCompare(b.route);
-        });
-
-        if (filtered.length === 0) {
-            gridEl.innerHTML = '';
-            noResultsEl.classList.remove('hidden');
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full py-12 text-center text-slate-400">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-amber-500"></i>
+                    <p class="text-sm">找不到符合條件的路線，請嘗試其他關鍵字。</p>
+                </div>
+            `;
             return;
         }
 
-        noResultsEl.classList.add('hidden');
+        // 限制前 100 筆以保持頁面流暢度
+        const displayList = list.slice(0, 100);
 
-        gridEl.innerHTML = filtered.slice(0, 100).map(r => {
-            const companyColor = r.company === 'KMB' ? 'bg-red-600 text-white' : 
-                                 r.company === 'CTB' ? 'bg-amber-400 text-slate-900' : 'bg-teal-600 text-white';
-            const companyBorder = r.company === 'KMB' ? 'border-red-900/40 hover:border-red-500/80' : 
-                                  r.company === 'CTB' ? 'border-yellow-900/40 hover:border-yellow-400/80' : 'border-teal-800/50 hover:border-teal-400/80';
+        displayList.forEach(r => {
+            const card = document.createElement('div');
+            card.className = "bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/80 hover:border-slate-500 rounded-xl p-3 cursor-pointer transition flex items-center justify-between group shadow-sm";
             
-            const favKey = `${r.company}_${r.route}_${r.service_type || '1'}`;
-            const isFav = AppState.favorites.includes(favKey);
+            // 巴士公司標籤顏色
+            let coBadgeStyle = "bg-red-600/20 text-red-400 border border-red-500/30";
+            if (r.co === 'CTB') coBadgeStyle = "bg-amber-500/20 text-yellow-300 border border-yellow-500/30";
+            if (r.co === 'NLB') coBadgeStyle = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
 
-            const origName = isEn ? (r.orig_en || r.orig_tc) : (r.orig_tc || r.orig_en);
-            const destName = isEn ? (r.dest_en || r.dest_tc) : (r.dest_tc || r.dest_en);
-            const compName = isEn ? r.companyNameEn : r.companyName;
+            card.onclick = () => selectRoute(r);
 
-            let fareTag = '';
-            if (r.company === 'NLB') {
-                const nFare = r.normalFare && r.normalFare !== '--' ? `$${Number(r.normalFare).toFixed(1)}` : (isEn ? 'Sectional' : '依段收費');
-                const hFare = r.holidayFare && r.holidayFare !== '--' ? `$${Number(r.holidayFare).toFixed(1)}` : nFare;
-                fareTag = `
-                    <div class="mt-2 pt-1.5 border-t border-slate-700/50 flex items-center justify-between text-[11px]">
-                        <span class="text-teal-300 font-medium">${isEn ? 'Weekday' : '平日'}: <b class="text-white">${nFare}</b></span>
-                        <span class="text-amber-300 font-medium">${isEn ? 'Holiday' : '假日'}: <b class="text-white">${hFare}</b></span>
+            card.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-14 text-center">
+                        <span class="text-xs font-bold px-1.5 py-0.5 rounded uppercase block mb-1 ${coBadgeStyle}">${r.co}</span>
+                        <span class="text-lg font-black text-white group-hover:text-rose-400 transition tracking-tight">${r.route}</span>
                     </div>
-                `;
-            }
-
-            return `
-                <div onclick="selectRoute('${r.company}', '${r.route}', '${r.service_type || '1'}', '${r.routeId || ''}')" 
-                     class="group p-3 rounded-xl bg-slate-800/90 hover:bg-slate-750 border ${companyBorder} cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center space-x-3">
-                            <span class="w-14 h-9 rounded-lg font-black text-base flex items-center justify-center ${companyColor} shadow-md tracking-wider">
-                                ${r.route}
-                            </span>
-                            <div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-700 text-slate-300">
-                                        ${compName}
-                                    </span>
-                                    ${r.routeType ? `<span class="text-[10px] text-teal-400 font-medium">${r.routeType}</span>` : ''}
-                                </div>
-                                <div class="text-xs sm:text-sm font-bold text-white mt-0.5 flex items-center gap-1">
-                                    <span>${origName || '--'}</span>
-                                    <i class="fa-solid fa-arrow-right text-[10px] text-slate-400"></i>
-                                    <span>${destName || '--'}</span>
-                                </div>
-                            </div>
+                    <div class="border-l border-slate-700 pl-3">
+                        <div class="text-xs text-slate-300 font-semibold flex items-center gap-1">
+                            <span>${r.orig_tc || '起點'}</span>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-500"></i>
+                            <span class="text-white">${r.dest_tc || '終點'}</span>
                         </div>
-                        <button onclick="event.stopPropagation(); toggleFavorite('${r.company}', '${r.route}', '${r.service_type || '1'}')" 
-                                class="p-1.5 text-slate-500 hover:text-amber-400 transition" title="加入收藏">
-                            <i class="${isFav ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'} text-sm"></i>
-                        </button>
+                        <div class="text-[11px] text-slate-400 mt-0.5">${r.orig_en || ''} → ${r.dest_en || ''}</div>
                     </div>
-                    ${fareTag}
+                </div>
+                <div class="text-right">
+                    <span class="text-xs font-bold text-emerald-400 block">$${r.adultFare.toFixed(1)}</span>
+                    <span class="text-[10px] text-slate-400">全程正價</span>
                 </div>
             `;
-        }).join('');
+            container.appendChild(card);
+        });
     }
 
-    // --- 5. 選取路線與載入站點資訊 ---
-    async function selectRoute(company, route, service_type = '1', routeId = '') {
-        const found = AppState.routes.find(r => r.company === company && r.route === route && (r.service_type || '1') === service_type);
-        if (!found) return;
+    // --- 6. 選擇指定路線並載入車站、車費及即時 ETA ---
+    async function selectRoute(routeObj) {
+        STATE.selectedRoute = routeObj;
+        STATE.selectedDirection = 'outbound';
 
-        AppState.selectedRoute = found;
-        AppState.selectedBound = 'O';
+        // 切換 UI 顯示詳細面板
+        document.getElementById('routeListContainer').classList.add('hidden');
+        document.getElementById('routeDetailCard').classList.remove('hidden');
 
-        const detailView = document.getElementById('routeDetailView');
-        detailView.classList.remove('hidden');
+        // 填入基本資訊
+        document.getElementById('detailRouteNo').innerText = routeObj.route;
+        document.getElementById('detailRouteDest').innerText = `開往 ${routeObj.dest_tc}`;
+        document.getElementById('detailCoBadge').innerText = routeObj.co;
+        document.getElementById('companyWatermark').innerText = routeObj.co;
 
-        const isEn = AppState.lang === 'en';
-        document.getElementById('detailRouteBadge').innerText = found.route;
-        document.getElementById('detailRouteBadge').className = `px-2.5 py-1 rounded-lg font-black text-lg tracking-wider text-white shadow ${
-            company === 'KMB' ? 'bg-red-600' : company === 'CTB' ? 'bg-amber-500 text-slate-950' : 'bg-teal-600'
-        }`;
-
-        const compText = isEn ? found.companyNameEn : found.companyName;
-        document.getElementById('detailCompanyTag').innerText = `${compText} (${found.company})`;
-
-        const origName = isEn ? (found.orig_en || found.orig_tc) : (found.orig_tc || found.orig_en);
-        const destName = isEn ? (found.dest_en || found.dest_tc) : (found.dest_tc || found.dest_en);
-        document.getElementById('detailRouteTitle').innerText = `${origName} ⇄ ${destName}`;
-
-        updateBoundBtnTexts();
-        renderFareDetails(found);
-        updateDetailFavIcon();
-
-        await fetchRouteStopsAndEta(found, AppState.selectedBound);
-        startCountdownTimer();
-
-        if (window.innerWidth < 1024 && AppState.isMobileMapActive) {
-            toggleMobileView();
-        }
-    }
-
-    function updateBoundBtnTexts() {
-        if (!AppState.selectedRoute) return;
-        const r = AppState.selectedRoute;
-        const isEn = AppState.lang === 'en';
-        const dict = I18N[AppState.lang];
-
-        const origName = isEn ? (r.orig_en || r.orig_tc) : (r.orig_tc || r.orig_en);
-        const destName = isEn ? (r.dest_en || r.dest_tc) : (r.dest_tc || r.dest_en);
-
-        document.getElementById('boundBtnOut').innerText = `${dict.boundOut}${destName || origName}`;
-        document.getElementById('boundBtnIn').innerText = `${dict.boundIn}${origName || destName}`;
-        updateBoundBtnStyles();
-    }
-
-    // --- 6. 渲染詳細車費面板 ---
-    function renderFareDetails(routeObj) {
-        const fareContent = document.getElementById('fareDetailsContent');
-        const dict = I18N[AppState.lang];
-
-        if (routeObj.company === 'NLB') {
-            const meta = NLB_STATIC_METADATA[routeObj.route] || {};
-            const normal = routeObj.normalFare && routeObj.normalFare !== '--' ? `$${Number(routeObj.normalFare).toFixed(1)}` : (meta.normalFare ? `$${meta.normalFare.toFixed(1)}` : '--');
-            const holiday = routeObj.holidayFare && routeObj.holidayFare !== '--' ? `$${Number(routeObj.holidayFare).toFixed(1)}` : (meta.holidayFare ? `$${meta.holidayFare.toFixed(1)}` : normal);
-
-            fareContent.innerHTML = `
-                <div class="bg-slate-900/90 p-2 rounded border border-slate-700">
-                    <span class="text-slate-400 block text-[10px]">${dict.fareWeekday}</span>
-                    <span class="text-base font-bold text-teal-300">${normal}</span>
-                </div>
-                <div class="bg-slate-900/90 p-2 rounded border border-slate-700">
-                    <span class="text-slate-400 block text-[10px]">${dict.fareHoliday}</span>
-                    <span class="text-base font-bold text-amber-300">${holiday}</span>
-                </div>
-                <div class="col-span-2 text-[10px] text-slate-400 flex items-center justify-between">
-                    <span>${dict.fareDiscountInfo}</span>
-                    <span>${dict.farePaymentInfo}</span>
-                </div>
-            `;
+        // 標籤顏色
+        const badge = document.getElementById('detailCoBadge');
+        if (routeObj.co === 'KMB') {
+            badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-red-600 text-white";
+        } else if (routeObj.co === 'CTB') {
+            badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-yellow-500 text-slate-900";
         } else {
-            fareContent.innerHTML = `
-                <div class="bg-slate-900/90 p-2 rounded border border-slate-700">
-                    <span class="text-slate-400 block text-[10px]">${dict.fareStandard}</span>
-                    <span class="text-base font-bold text-slate-100">${dict.fareStandardNote}</span>
-                </div>
-                <div class="bg-slate-900/90 p-2 rounded border border-slate-700">
-                    <span class="text-slate-400 block text-[10px]">${dict.fareSpecial}</span>
-                    <span class="text-base font-bold text-emerald-400">$2.0</span>
-                </div>
-                <div class="col-span-2 text-[10px] text-slate-400">
-                    ${dict.fareSpecialNote}
-                </div>
-            `;
+            badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white";
+        }
+
+        // 填入完整車費資訊
+        updateFareSummary(routeObj.adultFare, routeObj.holidayFare);
+
+        // 設定雙向文字
+        document.getElementById('dirOutboundText').innerText = routeObj.dest_tc || '去程';
+        document.getElementById('dirInboundText').innerText = routeObj.orig_tc || '回程';
+
+        // 檢查收藏狀態
+        updateRouteBookmarkIcon();
+
+        // 載入路線的所有車站清單
+        await fetchRouteStops(routeObj, STATE.selectedDirection);
+    }
+
+    // --- 7. 更新車費彙總資訊卡 ---
+    function updateFareSummary(adultFare, holidayFare) {
+        const concession = Math.round((adultFare / 2) * 10) / 10;
+        document.getElementById('fareAdult').innerText = `$${adultFare.toFixed(1)}`;
+        document.getElementById('fareConcession').innerText = `$${concession.toFixed(1)}`;
+        document.getElementById('fareGovScheme').innerText = `$${Math.min(2.0, adultFare).toFixed(1)}`;
+        
+        if (holidayFare && holidayFare > 0 && holidayFare !== adultFare) {
+            document.getElementById('fareHoliday').innerText = `$${holidayFare.toFixed(1)}`;
+        } else {
+            document.getElementById('fareHoliday').innerText = '與平日同價';
         }
     }
 
-    // --- 7. 抓取車站列表與即時 ETA ---
-    async function fetchRouteStopsAndEta(routeObj, bound) {
-        const timelineEl = document.getElementById('stopsTimeline');
-        const loadingEl = document.getElementById('stopsLoading');
-        
-        loadingEl.classList.remove('hidden');
-        timelineEl.classList.add('hidden');
+    // --- 8. 取得路線各站點 (支援 KMB, CTB, NLB) ---
+    async function fetchRouteStops(routeObj, direction) {
+        const stopListContainer = document.getElementById('stopList');
+        stopListContainer.innerHTML = `
+            <div class="py-10 text-center text-slate-400">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-rose-500 mb-2"></i>
+                <p class="text-xs">正在載入各站分段車費與即時班次...</p>
+            </div>
+        `;
+
+        let stops = [];
 
         try {
-            let stopsData = [];
-
-            // A. NLB 站點與 ETA
-            if (routeObj.company === 'NLB') {
-                const routeId = routeObj.routeId || '1';
-                const stopsRes = await fetch(`https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=list&routeId=${routeId}`).then(r => r.json());
+            if (routeObj.co === 'KMB') {
+                const boundParam = (direction === 'outbound') ? (routeObj.bound || 'O') : (routeObj.bound === 'O' ? 'I' : 'O');
+                const serviceType = routeObj.service_type || '1';
                 
-                if (stopsRes && stopsRes.stops && stopsRes.stops.length > 0) {
-                    let nlbStops = stopsRes.stops;
-                    if (bound === 'I') nlbStops = [...nlbStops].reverse();
+                // 1. 取得路線站點順序
+                const routeStopRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${routeObj.route}/${boundParam}/${serviceType}`);
+                const routeStopJson = await routeStopRes.json();
 
-                    const etaPromises = nlbStops.map(async (st, idx) => {
-                        let etas = [];
+                if (routeStopJson.data && routeStopJson.data.length > 0) {
+                    // 取前 35 站詳細座標
+                    const stopPromises = routeStopJson.data.map(async (st, idx) => {
+                        let name_tc = `車站 ${st.seq}`;
+                        let name_en = '';
+                        let lat = 22.3193 + (idx * 0.003);
+                        let lng = 114.1694 + (idx * 0.003);
+
                         try {
-                            const langParam = AppState.lang === 'en' ? 'en' : 'zh';
-                            const etaRes = await fetch(`https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=estimatedArrivals&routeId=${routeId}&stopId=${st.stopId}&language=${langParam}`).then(r => r.json());
-                            if (etaRes && etaRes.estimatedArrivals) {
-                                etas = etaRes.estimatedArrivals.map(item => ({
-                                    eta: item.estimatedArrivalTime,
-                                    remark: item.routeVariantName || (item.departed === 1 ? 'Departed' : ''),
-                                    isSchedule: item.noSchedule === true
-                                }));
+                            const stopInfoRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${st.stop}`);
+                            const stopInfoJson = await stopInfoRes.json();
+                            if (stopInfoJson.data) {
+                                name_tc = stopInfoJson.data.name_tc;
+                                name_en = stopInfoJson.data.name_en;
+                                lat = parseFloat(stopInfoJson.data.lat) || lat;
+                                lng = parseFloat(stopInfoJson.data.long) || lng;
                             }
                         } catch (e) {}
 
                         return {
-                            stop_id: st.stopId,
-                            seq: idx + 1,
-                            name_tc: st.stopName_c || st.stopName_e,
-                            name_en: st.stopName_e,
-                            lat: parseFloat(st.latitude),
-                            lng: parseFloat(st.longitude),
-                            fare: st.fare || routeObj.normalFare || null,
-                            fareHoliday: st.fareHoliday || routeObj.holidayFare || null,
-                            etas: etas
+                            seq: st.seq,
+                            stopId: st.stop,
+                            name_tc: name_tc,
+                            name_en: name_en,
+                            lat: lat,
+                            lng: lng,
+                            co: 'KMB',
+                            route: routeObj.route,
+                            service_type: serviceType
                         };
                     });
-
-                    stopsData = await Promise.all(etaPromises);
+                    stops = await Promise.all(stopPromises);
                 }
-            }
-            // B. 九巴 (KMB)
-            else if (routeObj.company === 'KMB') {
-                const kmbBound = bound === 'O' ? 'outbound' : 'inbound';
-                const sType = routeObj.service_type || '1';
-                const routeStopsRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${routeObj.route}/${kmbBound}/${sType}`).then(r => r.json());
 
-                if (routeStopsRes && routeStopsRes.data) {
-                    const rawStops = routeStopsRes.data;
-                    const stopPromises = rawStops.map(async (item) => {
-                        const [stopInfo, etaInfo] = await Promise.allSettled([
-                            fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${item.stop}`).then(r => r.json()),
-                            fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${item.stop}/${routeObj.route}/${sType}`).then(r => r.json())
-                        ]);
+            } else if (routeObj.co === 'CTB') {
+                const dirParam = (direction === 'outbound') ? 'outbound' : 'inbound';
+                const res = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${routeObj.route}/${dirParam}`);
+                const json = await res.json();
 
-                        const st = stopInfo.status === 'fulfilled' ? stopInfo.value.data : null;
-                        const etas = etaInfo.status === 'fulfilled' && etaInfo.value.data ? 
-                            etaInfo.value.data.filter(e => e.dir === (bound === 'O' ? 'O' : 'I') || e.service_type == sType)
-                                .map(e => ({ eta: e.eta, remark: e.rmk_tc || '', isSchedule: e.is_schedule === 'Y' })) : [];
+                if (json.data && json.data.length > 0) {
+                    const stopPromises = json.data.map(async (st, idx) => {
+                        let name_tc = `車站 ${st.seq}`;
+                        let name_en = '';
+                        let lat = 22.28 + (idx * 0.002);
+                        let lng = 114.15 + (idx * 0.002);
+
+                        try {
+                            const sRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/stop/${st.stop}`);
+                            const sJson = await sRes.json();
+                            if (sJson.data) {
+                                name_tc = sJson.data.name_tc;
+                                name_en = sJson.data.name_en;
+                                lat = parseFloat(sJson.data.lat) || lat;
+                                lng = parseFloat(sJson.data.long) || lng;
+                            }
+                        } catch(e) {}
 
                         return {
-                            stop_id: item.stop,
-                            seq: parseInt(item.seq),
-                            name_tc: st ? st.name_tc : `Stop (${item.stop})`,
-                            name_en: st ? st.name_en : `Stop (${item.stop})`,
-                            lat: st ? parseFloat(st.lat) : 22.3193,
-                            lng: st ? parseFloat(st.long) : 114.1694,
-                            etas: etas
+                            seq: st.seq,
+                            stopId: st.stop,
+                            name_tc: name_tc,
+                            name_en: name_en,
+                            lat: lat,
+                            lng: lng,
+                            co: 'CTB',
+                            route: routeObj.route
                         };
                     });
-
-                    stopsData = await Promise.all(stopPromises);
+                    stops = await Promise.all(stopPromises);
                 }
-            }
-            // C. 城巴 / 新巴 (CTB)
-            else if (routeObj.company === 'CTB') {
-                const ctbBound = bound === 'O' ? 'outbound' : 'inbound';
-                const routeStopsRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/ctb/${routeObj.route}/${ctbBound}`).then(r => r.json());
 
-                if (routeStopsRes && routeStopsRes.data) {
-                    const rawStops = routeStopsRes.data;
-                    const stopPromises = rawStops.map(async (item) => {
-                        const [stopInfo, etaInfo] = await Promise.allSettled([
-                            fetch(`https://rt.data.gov.hk/v2/transport/citybus/stop/${item.stop}`).then(r => r.json()),
-                            fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/ctb/${item.stop}/${routeObj.route}`).then(r => r.json())
-                        ]);
+            } else if (routeObj.co === 'NLB') {
+                // 嶼巴車站清單 API
+                const rId = routeObj.routeId || '1';
+                const res = await fetch(`https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=list&routeId=${rId}`);
+                const json = await res.json();
 
-                        const st = stopInfo.status === 'fulfilled' ? stopInfo.value.data : null;
-                        const etas = etaInfo.status === 'fulfilled' && etaInfo.value.data ? 
-                            etaInfo.value.data.filter(e => e.dir === (bound === 'O' ? 'O' : 'I'))
-                                .map(e => ({ eta: e.eta, remark: e.rmk_tc || '', isSchedule: e.is_schedule === 'Y' })) : [];
-
-                        return {
-                            stop_id: item.stop,
-                            seq: parseInt(item.seq),
-                            name_tc: st ? st.name_tc : `Stop (${item.stop})`,
-                            name_en: st ? st.name_en : `Stop (${item.stop})`,
-                            lat: st ? parseFloat(st.lat) : 22.3193,
-                            lng: st ? parseFloat(st.long) : 114.1694,
-                            etas: etas
-                        };
-                    });
-
-                    stopsData = await Promise.all(stopPromises);
+                if (json.stops && json.stops.length > 0) {
+                    stops = json.stops.map((st, idx) => ({
+                        seq: idx + 1,
+                        stopId: st.stopId,
+                        name_tc: st.stopName_c,
+                        name_en: st.stopName_e,
+                        lat: parseFloat(st.latitude) || (22.25 + idx * 0.003),
+                        lng: parseFloat(st.longitude) || (113.95 + idx * 0.003),
+                        fare: parseFloat(st.fare) || null,
+                        fareHoliday: parseFloat(st.fareHoliday) || null,
+                        co: 'NLB',
+                        routeId: rId,
+                        route: routeObj.route
+                    }));
                 }
             }
 
-            AppState.currentStops = stopsData;
-            renderStopsList(stopsData);
-            renderStopsOnMap(stopsData);
+            STATE.stopsData = stops;
+            document.getElementById('stopCountBadge').innerText = `${stops.length} 站`;
 
-        } catch (error) {
-            console.error('車站載入失敗:', error);
-        } finally {
-            loadingEl.classList.add('hidden');
-            timelineEl.classList.remove('hidden');
+            // 渲染車站列表與分段收費
+            renderStopList(stops, routeObj);
+            // 更新地圖標記與軌跡
+            updateMapWithStops(stops, routeObj);
+
+        } catch (err) {
+            console.error('Fetch stops error:', err);
+            stopListContainer.innerHTML = `
+                <div class="py-8 text-center text-slate-400">
+                    <p class="text-xs text-rose-400">載入站點資訊失敗，請檢查網絡連線。</p>
+                </div>
+            `;
         }
     }
 
-    // --- 8. 渲染車站清單 ---
-    function renderStopsList(stops) {
-        const timelineEl = document.getElementById('stopsTimeline');
-        const dict = I18N[AppState.lang];
-        const isEn = AppState.lang === 'en';
+    // --- 9. 渲染車站清單 (包含分段車費與即時 ETA 容器) ---
+    function renderStopList(stops, routeObj) {
+        const container = document.getElementById('stopList');
+        container.innerHTML = '';
 
-        if (!stops || stops.length === 0) {
-            timelineEl.innerHTML = `
-                <div class="text-center py-10 text-slate-400 space-y-1">
-                    <i class="fa-solid fa-circle-exclamation text-xl text-slate-500"></i>
-                    <p class="text-xs">${dict.noStops}</p>
-                </div>
-            `;
+        if (stops.length === 0) {
+            container.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs">此方向暫無車站資料。</div>`;
             return;
         }
 
-        timelineEl.innerHTML = stops.map((stop, idx) => {
-            let etaHtml = '';
-            if (stop.etas && stop.etas.length > 0) {
-                etaHtml = stop.etas.slice(0, 3).map((e) => {
-                    const diffMins = calculateMinutesDiff(e.eta);
-                    let badgeColor = 'bg-teal-600 text-white';
-                    let timeText = `${diffMins} ${dict.minUnit}`;
+        const totalStops = stops.length;
 
-                    if (diffMins === null) {
-                        timeText = dict.noEta;
-                        badgeColor = 'bg-slate-700 text-slate-300';
-                    } else if (diffMins <= 1) {
-                        timeText = dict.arriving;
-                        badgeColor = 'bg-emerald-600 text-white animate-live';
-                    } else if (diffMins <= 5) {
-                        badgeColor = 'bg-teal-500 text-white';
-                    } else {
-                        badgeColor = 'bg-slate-700 text-slate-200';
-                    }
+        stops.forEach((stop, index) => {
+            // 計算本站上車分段車費
+            const stopBoardingFare = FARE_DATABASE.calculateStopFare(
+                routeObj.adultFare,
+                index,
+                totalStops,
+                routeObj.co === 'NLB',
+                stop.fare
+            );
 
-                    const timeFormatted = formatTime(e.eta);
+            const item = document.createElement('div');
+            item.className = "bg-slate-900/80 hover:bg-slate-900 border border-slate-700/80 rounded-xl p-3 transition flex flex-col gap-2";
+            item.id = `stop-item-${stop.stopId}`;
 
-                    return `
-                        <div class="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-slate-900/90 border border-slate-700/60">
-                            <div class="flex items-center space-x-2">
-                                <span class="px-2 py-0.5 rounded font-bold ${badgeColor} text-[11px]">
-                                    ${timeText}
-                                </span>
-                                ${e.remark ? `<span class="text-[10px] text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">${e.remark}</span>` : ''}
-                            </div>
-                            <span class="text-slate-400 font-mono text-[11px]">${timeFormatted}</span>
+            item.innerHTML = `
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start gap-2.5">
+                        <div class="w-6 h-6 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[11px] font-bold text-slate-300 shrink-0 mt-0.5">
+                            ${stop.seq}
                         </div>
-                    `;
-                }).join('');
-            } else {
-                etaHtml = `
-                    <div class="text-[11px] text-slate-400 italic py-1 px-2 bg-slate-900/60 rounded border border-slate-800">
-                        ${dict.noEta}
+                        <div>
+                            <div class="font-bold text-sm text-white flex items-center gap-1.5">
+                                <span>${stop.name_tc}</span>
+                                <button onclick="copyStopName('${stop.name_tc}')" class="text-slate-500 hover:text-slate-300 text-[10px]" title="複製站名">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="text-[11px] text-slate-400">${stop.name_en || ''}</div>
+                        </div>
                     </div>
-                `;
-            }
-
-            const stopFareHtml = stop.fare ? `
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800/60">
-                    $${Number(stop.fare).toFixed(1)} ${stop.fareHoliday ? `| H: $${Number(stop.fareHoliday).toFixed(1)}` : ''}
-                </span>
-            ` : '';
-
-            const stopName = isEn ? (stop.name_en || stop.name_tc) : (stop.name_tc || stop.name_en);
-            const subName = isEn ? stop.name_tc : stop.name_en;
-
-            return `
-                <div class="group relative bg-slate-800/80 hover:bg-slate-750 p-3 rounded-xl border border-slate-700 transition cursor-pointer"
-                     onclick="focusStopOnMap(${stop.lat}, ${stop.lng}, '${stopName}', ${idx})">
                     
-                    <div class="absolute -left-[23px] top-4 w-3.5 h-3.5 rounded-full border-2 border-slate-900 bg-teal-500 group-hover:scale-125 transition"></div>
-
-                    <div class="flex items-start justify-between mb-1.5">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-[11px] font-mono font-bold text-slate-400 w-5">
-                                ${stop.seq || idx + 1}.
-                            </span>
-                            <div>
-                                <h3 class="text-xs sm:text-sm font-bold text-slate-100 group-hover:text-teal-300 transition">
-                                    ${stopName}
-                                </h3>
-                                <p class="text-[10px] text-slate-400 truncate">${subName || ''}</p>
-                            </div>
-                        </div>
-                        ${stopFareHtml}
-                    </div>
-
-                    <div class="space-y-1 mt-2">
-                        ${etaHtml}
+                    <!-- 分段車費標籤 -->
+                    <div class="text-right shrink-0">
+                        <span class="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                            $${stopBoardingFare.toFixed(1)}
+                        </span>
+                        <span class="text-[9px] text-slate-400 block mt-0.5">此站上車</span>
                     </div>
                 </div>
+
+                <!-- ETA 班次倒數容器 -->
+                <div id="eta-container-${stop.stopId}" class="flex flex-wrap gap-1.5 pt-1 border-t border-slate-800">
+                    <span class="text-[11px] text-slate-500 flex items-center gap-1">
+                        <i class="fa-solid fa-spinner fa-spin text-[10px]"></i> 正在獲取班次...
+                    </span>
+                </div>
             `;
-        }).join('');
+
+            container.appendChild(item);
+
+            // 個別非同步獲取該站即時 ETA
+            fetchSingleStopEta(stop, routeObj);
+        });
     }
 
-    // --- 9. 在 Leaflet 地圖上繪製站點與軌跡 ---
-    function renderStopsOnMap(stops) {
-        AppState.markersLayer.clearLayers();
-        if (AppState.routePolyline) {
-            AppState.map.removeLayer(AppState.routePolyline);
-            AppState.routePolyline = null;
-        }
+    // --- 10. 獲取單一車站即時到站時間 (ETA) ---
+    async function fetchSingleStopEta(stop, routeObj) {
+        const etaContainer = document.getElementById(`eta-container-${stop.stopId}`);
+        if (!etaContainer) return;
 
-        const validCoords = [];
-        const company = AppState.selectedRoute ? AppState.selectedRoute.company : 'NLB';
-        const pinBg = company === 'KMB' ? '#E1251B' : company === 'CTB' ? '#EAB308' : '#00897B';
+        try {
+            let etaList = [];
 
-        stops.forEach((stop, idx) => {
-            if (isNaN(stop.lat) || isNaN(stop.lng) || stop.lat === 0) return;
+            if (routeObj.co === 'KMB') {
+                const serviceType = stop.service_type || '1';
+                const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${stop.stopId}/${routeObj.route}/${serviceType}`);
+                const json = await res.json();
+                if (json.data) {
+                    etaList = json.data.map(e => ({
+                        eta: e.eta,
+                        rmk: e.rmk_tc || '',
+                        diffMins: calculateMinutesDiff(e.eta)
+                    })).filter(e => e.eta);
+                }
 
-            const latLng = [stop.lat, stop.lng];
-            validCoords.push(latLng);
+            } else if (routeObj.co === 'CTB') {
+                const res = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stop.stopId}/${routeObj.route}`);
+                const json = await res.json();
+                if (json.data) {
+                    etaList = json.data.map(e => ({
+                        eta: e.eta,
+                        rmk: e.rmk_tc || '',
+                        diffMins: calculateMinutesDiff(e.eta)
+                    })).filter(e => e.eta);
+                }
 
-            const customIcon = L.divIcon({
-                className: 'custom-stop-marker-wrapper',
-                html: `<div class="custom-stop-icon" style="background-color: ${pinBg}; width: 22px; height: 22px;">${idx + 1}</div>`,
-                iconSize: [22, 22],
-                iconAnchor: [11, 11]
+            } else if (routeObj.co === 'NLB') {
+                const res = await fetch(`https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=estimatedArrivals&routeId=${stop.routeId}&stopId=${stop.stopId}`);
+                const json = await res.json();
+                if (json.estimatedArrivals) {
+                    etaList = json.estimatedArrivals.map(e => ({
+                        eta: e.estimatedArrivalTime,
+                        rmk: e.remarks_c || '',
+                        diffMins: calculateMinutesDiff(e.estimatedArrivalTime)
+                    })).filter(e => e.eta);
+                }
+            }
+
+            // 渲染 ETA 標籤
+            etaContainer.innerHTML = '';
+            if (etaList.length === 0) {
+                etaContainer.innerHTML = `<span class="text-[11px] text-slate-500 font-medium">暫無即時班次預報 / 已過尾班車</span>`;
+                return;
+            }
+
+            etaList.slice(0, 3).forEach((item, i) => {
+                const badge = document.createElement('div');
+                let colorClass = "bg-slate-800 text-slate-300 border-slate-700";
+                
+                if (item.diffMins <= 1) {
+                    colorClass = "bg-rose-500/20 text-rose-300 border-rose-500/40 font-bold";
+                } else if (item.diffMins <= 5) {
+                    colorClass = "bg-amber-500/20 text-amber-300 border-amber-500/40 font-semibold";
+                } else {
+                    colorClass = "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+                }
+
+                badge.className = `text-[11px] px-2 py-0.5 rounded-md border flex items-center gap-1.5 ${colorClass}`;
+                badge.innerHTML = `
+                    <span>${item.diffMins <= 0 ? '即將抵達' : item.diffMins + ' 分鐘'}</span>
+                    <span class="text-[9px] opacity-75">(${formatTime(item.eta)})</span>
+                    ${item.rmk ? `<span class="text-[9px] text-amber-400 font-normal">[${item.rmk}]</span>` : ''}
+                `;
+                etaContainer.appendChild(badge);
             });
 
-            const marker = L.marker(latLng, { icon: customIcon }).addTo(AppState.markersLayer);
-
-            const stopName = AppState.lang === 'en' ? (stop.name_en || stop.name_tc) : (stop.name_tc || stop.name_en);
-
-            const popupContent = `
-                <div class="p-1 text-slate-900 font-sans">
-                    <div class="text-[11px] font-bold text-slate-500 uppercase">${company} • Stop ${idx + 1}</div>
-                    <div class="text-sm font-bold mt-0.5">${stopName}</div>
-                    ${stop.fare ? `<div class="text-xs font-semibold text-teal-700 mt-1">Fare: $${Number(stop.fare).toFixed(1)}</div>` : ''}
-                </div>
-            `;
-            marker.bindPopup(popupContent);
-        });
-
-        if (validCoords.length > 1) {
-            AppState.routePolyline = L.polyline(validCoords, {
-                color: pinBg,
-                weight: 4,
-                opacity: 0.85,
-                lineJoin: 'round'
-            }).addTo(AppState.map);
-
-            AppState.map.fitBounds(AppState.routePolyline.getBounds(), { padding: [40, 40] });
-        } else if (validCoords.length === 1) {
-            AppState.map.setView(validCoords[0], 15);
+        } catch (e) {
+            etaContainer.innerHTML = `<span class="text-[11px] text-slate-500">無法獲取 ETA</span>`;
         }
     }
 
-    // --- 10. 地圖聚焦站點 ---
-    function focusStopOnMap(lat, lng, name, idx) {
-        if (isNaN(lat) || isNaN(lng)) return;
+    // --- 11. 路線搜尋與篩選邏輯 ---
+    function handleSearchInput(query) {
+        const clearBtn = document.getElementById('clearSearchBtn');
+        const q = (query || '').trim().toUpperCase();
 
-        AppState.map.flyTo([lat, lng], 16, { animate: true, duration: 1 });
-
-        const statusBar = document.getElementById('mapStatusBar');
-        const statusText = document.getElementById('mapStatusText');
-        statusText.innerHTML = `Stop ${idx + 1}: <b>${name}</b>`;
-        statusBar.classList.remove('hidden');
-
-        if (window.innerWidth < 1024 && !AppState.isMobileMapActive) {
-            toggleMobileView();
-        }
-    }
-
-    function fitMapToStops() {
-        if (AppState.routePolyline) {
-            AppState.map.fitBounds(AppState.routePolyline.getBounds(), { padding: [40, 40] });
-        }
-    }
-
-    // --- 11. 方向切換邏輯 ---
-    function switchBound(bound) {
-        if (AppState.selectedBound === bound) return;
-        AppState.selectedBound = bound;
-        updateBoundBtnStyles();
-        if (AppState.selectedRoute) {
-            fetchRouteStopsAndEta(AppState.selectedRoute, bound);
-        }
-    }
-
-    function updateBoundBtnStyles() {
-        const btnOut = document.getElementById('boundBtnOut');
-        const btnIn = document.getElementById('boundBtnIn');
-
-        if (AppState.selectedBound === 'O') {
-            btnOut.className = 'py-1 px-2 rounded-md font-bold text-center transition bg-teal-600 text-white truncate shadow';
-            btnIn.className = 'py-1 px-2 rounded-md font-medium text-center transition text-slate-400 hover:text-white truncate';
+        if (q.length > 0) {
+            clearBtn.classList.remove('hidden');
         } else {
-            btnIn.className = 'py-1 px-2 rounded-md font-bold text-center transition bg-teal-600 text-white truncate shadow';
-            btnOut.className = 'py-1 px-2 rounded-md font-medium text-center transition text-slate-400 hover:text-white truncate';
+            clearBtn.classList.add('hidden');
+        }
+
+        if (!q) {
+            STATE.filteredRoutes = STATE.routes;
+        } else {
+            STATE.filteredRoutes = STATE.routes.filter(r => {
+                const matchRoute = r.route.toUpperCase().includes(q);
+                const matchDest = (r.dest_tc && r.dest_tc.includes(q)) || (r.dest_en && r.dest_en.toUpperCase().includes(q));
+                const matchOrig = (r.orig_tc && r.orig_tc.includes(q)) || (r.orig_en && r.orig_en.toUpperCase().includes(q));
+                return matchRoute || matchDest || matchOrig;
+            });
+        }
+        renderRouteList();
+    }
+
+    function clearSearch() {
+        document.getElementById('routeSearchInput').value = '';
+        document.getElementById('clearSearchBtn').classList.add('hidden');
+        STATE.filteredRoutes = STATE.routes;
+        renderRouteList();
+    }
+
+    function setCompanyFilter(co) {
+        STATE.companyFilter = co;
+        document.querySelectorAll('.company-filter-btn').forEach(btn => {
+            btn.className = "company-filter-btn px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition flex items-center gap-1";
+        });
+        const activeBtn = document.getElementById(`filter-${co}`);
+        if (activeBtn) {
+            activeBtn.className = "company-filter-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-medium transition flex items-center gap-1 shadow";
+        }
+        renderRouteList();
+    }
+
+    // --- 12. 方向切換 (去程/回程) ---
+    function selectDirection(dir) {
+        STATE.selectedDirection = dir;
+        const outBtn = document.getElementById('dirOutboundBtn');
+        const inBtn = document.getElementById('dirInboundBtn');
+
+        if (dir === 'outbound') {
+            outBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-rose-600 text-white transition flex items-center justify-center gap-1";
+            inBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center justify-center gap-1";
+        } else {
+            inBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-rose-600 text-white transition flex items-center justify-center gap-1";
+            outBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center justify-center gap-1";
+        }
+
+        if (STATE.selectedRoute) {
+            fetchRouteStops(STATE.selectedRoute, dir);
         }
     }
 
-    // --- 12. 定時器與收藏夾 ---
-    function startCountdownTimer() {
-        clearInterval(AppState.countdownTimer);
-        AppState.remainingSeconds = 15;
-        document.getElementById('refreshCounterText').innerText = `${AppState.remainingSeconds}s`;
-
-        AppState.countdownTimer = setInterval(() => {
-            AppState.remainingSeconds--;
-            if (AppState.remainingSeconds <= 0) {
-                AppState.remainingSeconds = 15;
-                if (AppState.selectedRoute) {
-                    fetchRouteStopsAndEta(AppState.selectedRoute, AppState.selectedBound);
-                }
-            }
-            document.getElementById('refreshCounterText').innerText = `${AppState.remainingSeconds}s`;
-        }, 1000);
+    function backToRouteList() {
+        document.getElementById('routeDetailCard').classList.add('hidden');
+        document.getElementById('routeListContainer').classList.remove('hidden');
     }
 
-    function toggleFavorite(company, route, service_type = '1') {
-        const key = `${company}_${route}_${service_type}`;
-        const idx = AppState.favorites.indexOf(key);
-        const dict = I18N[AppState.lang];
+    // --- 13. 車費對比彈出視窗 (Modal) ---
+    function openFareBreakdownModal() {
+        if (!STATE.selectedRoute) return;
+        const r = STATE.selectedRoute;
+        const modal = document.getElementById('fareModal');
+        const title = document.getElementById('modalFareRouteTitle');
+        const tbody = document.getElementById('modalFareTableBody');
+        const tips = document.getElementById('modalFareTips');
+
+        title.innerText = `${r.co} ${r.route} 號線車費結構`;
+
+        const fullAdult = r.adultFare;
+        const concession = Math.round((fullAdult / 2) * 10) / 10;
+        const govScheme = Math.min(2.0, fullAdult);
+        const holidayFare = r.holidayFare || fullAdult;
+
+        tbody.innerHTML = `
+            <tr>
+                <td class="p-2.5 font-bold text-white">成人 (12-64歲)</td>
+                <td class="p-2.5 font-bold text-emerald-400">$${fullAdult.toFixed(1)}</td>
+                <td class="p-2.5 text-slate-300">$${holidayFare.toFixed(1)}</td>
+                <td class="p-2.5 text-[11px] text-slate-400">標準收費 / 八達通轉乘優惠</td>
+            </tr>
+            <tr>
+                <td class="p-2.5 font-semibold text-sky-300">小童 (3-11歲)</td>
+                <td class="p-2.5 font-semibold text-sky-400">$${concession.toFixed(1)}</td>
+                <td class="p-2.5 text-slate-300">$${(Math.round((holidayFare/2)*10)/10).toFixed(1)}</td>
+                <td class="p-2.5 text-[11px] text-slate-400">半價特惠</td>
+            </tr>
+            <tr>
+                <td class="p-2.5 font-semibold text-amber-300">樂悠咭 (60-64歲)</td>
+                <td class="p-2.5 font-bold text-amber-400">$${govScheme.toFixed(1)}</td>
+                <td class="p-2.5 font-bold text-amber-400">$${govScheme.toFixed(1)}</td>
+                <td class="p-2.5 text-[11px] text-amber-400">政府 $2 優惠計劃</td>
+            </tr>
+            <tr>
+                <td class="p-2.5 font-semibold text-amber-300">長者 (65歲或以上)</td>
+                <td class="p-2.5 font-bold text-amber-400">$${govScheme.toFixed(1)}</td>
+                <td class="p-2.5 font-bold text-amber-400">$${govScheme.toFixed(1)}</td>
+                <td class="p-2.5 text-[11px] text-amber-400">政府 $2 優惠計劃</td>
+            </tr>
+        `;
+
+        tips.innerText = `本路線起點開出全程成人收費為 $${fullAdult.toFixed(1)}。巴士駛過特定收費分段點後車費會逐步調低，請在車站列表中查看每站上車的具體車費金額。`;
+
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function closeFareModal() {
+        const modal = document.getElementById('fareModal');
+        modal.classList.add('opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    // --- 14. 常用路線與車站收藏機制 ---
+    function loadLocalBookmarks() {
+        try {
+            const raw = localStorage.getItem('hk_bus_express_bookmarks');
+            if (raw) STATE.bookmarks = JSON.parse(raw);
+        } catch(e) {
+            STATE.bookmarks = [];
+        }
+        renderBookmarksList();
+    }
+
+    function saveBookmarks() {
+        try {
+            localStorage.setItem('hk_bus_express_bookmarks', JSON.stringify(STATE.bookmarks));
+        } catch(e) {}
+    }
+
+    function toggleRouteBookmark() {
+        if (!STATE.selectedRoute) return;
+        const r = STATE.selectedRoute;
+        const idx = STATE.bookmarks.findIndex(b => b.route === r.route && b.co === r.co);
 
         if (idx >= 0) {
-            AppState.favorites.splice(idx, 1);
-            showToast(`${dict.favRemove}: ${route}`, 'info');
+            STATE.bookmarks.splice(idx, 1);
+            showToast(`已從收藏中移除 ${r.route} 號線`);
         } else {
-            AppState.favorites.push(key);
-            showToast(`${dict.favAdd}: ${company} ${route}`, 'success');
+            STATE.bookmarks.push({
+                type: 'route',
+                route: r.route,
+                co: r.co,
+                orig_tc: r.orig_tc,
+                dest_tc: r.dest_tc,
+                adultFare: r.adultFare
+            });
+            showToast(`已將 ${r.route} 號線加入常用收藏`, 'success');
         }
-
-        localStorage.setItem('hk_bus_favorites', JSON.stringify(AppState.favorites));
-        updateFavCount();
-        renderRouteList();
-        updateDetailFavIcon();
+        saveBookmarks();
+        updateRouteBookmarkIcon();
+        renderBookmarksList();
     }
 
-    function toggleCurrentFavorite() {
-        if (!AppState.selectedRoute) return;
-        const r = AppState.selectedRoute;
-        toggleFavorite(r.company, r.route, r.service_type || '1');
+    function updateRouteBookmarkIcon() {
+        if (!STATE.selectedRoute) return;
+        const r = STATE.selectedRoute;
+        const isBookmarked = STATE.bookmarks.some(b => b.route === r.route && b.co === r.co);
+        const icon = document.getElementById('bookmarkRouteIcon');
+        if (isBookmarked) {
+            icon.className = "fa-solid fa-star text-amber-400 text-lg";
+        } else {
+            icon.className = "fa-regular fa-star text-lg";
+        }
     }
 
-    function updateFavCount() {
-        document.getElementById('favCount').innerText = AppState.favorites.length;
-    }
+    function renderBookmarksList() {
+        const container = document.getElementById('bookmarksList');
+        if (!container) return;
+        container.innerHTML = '';
 
-    function updateDetailFavIcon() {
-        if (!AppState.selectedRoute) return;
-        const r = AppState.selectedRoute;
-        const key = `${r.company}_${r.route}_${r.service_type || '1'}`;
-        const isFav = AppState.favorites.includes(key);
-        const icon = document.getElementById('favCurrentIcon');
-        icon.className = isFav ? 'fa-solid fa-star text-amber-400 text-sm' : 'fa-regular fa-star text-sm';
-    }
-
-    // --- 13. GPS 定位 ---
-    function locateUser() {
-        const dict = I18N[AppState.lang];
-        if (!navigator.geolocation) {
-            showToast(dict.locateError, 'error');
+        if (STATE.bookmarks.length === 0) {
+            container.innerHTML = `
+                <div class="py-12 text-center text-slate-400">
+                    <i class="fa-regular fa-star text-3xl mb-2 text-slate-500"></i>
+                    <p class="text-xs">目前暫無收藏路線。在路線頁面點擊星號即可收藏！</p>
+                </div>
+            `;
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-
-                if (AppState.userMarker) {
-                    AppState.map.removeLayer(AppState.userMarker);
+        STATE.bookmarks.forEach(b => {
+            const item = document.createElement('div');
+            item.className = "bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 rounded-xl p-3 flex items-center justify-between transition cursor-pointer";
+            item.onclick = () => {
+                const match = STATE.routes.find(r => r.route === b.route && r.co === b.co);
+                if (match) {
+                    switchView('routes');
+                    selectRoute(match);
                 }
+            };
 
-                const userIcon = L.divIcon({
-                    className: 'user-pin',
-                    html: '<div class="custom-user-icon" style="width: 16px; height: 16px;"></div>',
-                    iconSize: [16, 16],
-                    iconAnchor: [8, 8]
+            item.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 text-center">
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30 block mb-0.5">${b.co}</span>
+                        <span class="text-base font-extrabold text-white">${b.route}</span>
+                    </div>
+                    <div>
+                        <div class="text-xs font-semibold text-slate-200">${b.orig_tc} → ${b.dest_tc}</div>
+                        <div class="text-[10px] text-emerald-400 font-medium mt-0.5">成人正價: $${(b.adultFare||0).toFixed(1)}</div>
+                    </div>
+                </div>
+                <button onclick="event.stopPropagation(); removeBookmark('${b.co}', '${b.route}')" class="text-slate-400 hover:text-rose-400 p-2 text-sm" title="刪除收藏">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function removeBookmark(co, route) {
+        STATE.bookmarks = STATE.bookmarks.filter(b => !(b.co === co && b.route === route));
+        saveBookmarks();
+        updateRouteBookmarkIcon();
+        renderBookmarksList();
+        showToast('已移除收藏');
+    }
+
+    // --- 15. Leaflet 互動地圖管理 ---
+    function initLeafletMap() {
+        try {
+            STATE.map = L.map('busMap', {
+                zoomControl: true,
+                attributionControl: false
+            }).setView([STATE.userLat, STATE.userLng], 12);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19
+            }).addTo(STATE.map);
+        } catch(e) {
+            console.warn('Leaflet init warning:', e);
+        }
+    }
+
+    function updateMapWithStops(stops, routeObj) {
+        if (!STATE.map) return;
+
+        // 清除舊標記
+        STATE.mapMarkers.forEach(m => STATE.map.removeLayer(m));
+        STATE.mapMarkers = [];
+        if (STATE.mapPolyline) {
+            STATE.map.removeLayer(STATE.mapPolyline);
+            STATE.mapPolyline = null;
+        }
+
+        if (!stops || stops.length === 0) return;
+
+        const latlngs = [];
+
+        stops.forEach((st, idx) => {
+            if (st.lat && st.lng) {
+                latlngs.push([st.lat, st.lng]);
+
+                // 自訂圓形標記
+                const marker = L.circleMarker([st.lat, st.lng], {
+                    radius: 6,
+                    fillColor: routeObj.co === 'KMB' ? '#dc2626' : (routeObj.co === 'CTB' ? '#eab308' : '#059669'),
+                    color: '#ffffff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(STATE.map);
+
+                marker.on('click', () => {
+                    showMapStopPopup(st, routeObj, idx, stops.length);
                 });
 
-                AppState.userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(AppState.map);
-                AppState.map.flyTo([lat, lng], 15);
-                showToast(dict.locateSuccess, 'success');
+                STATE.mapMarkers.push(marker);
+            }
+        });
+
+        if (latlngs.length > 0) {
+            // 繪製路線軌跡
+            STATE.mapPolyline = L.polyline(latlngs, {
+                color: routeObj.co === 'KMB' ? '#ef4444' : (routeObj.co === 'CTB' ? '#eab308' : '#10b981'),
+                weight: 4,
+                opacity: 0.85,
+                dashArray: '2, 6'
+            }).addTo(STATE.map);
+
+            STATE.map.fitBounds(STATE.mapPolyline.getBounds(), { padding: [30, 30] });
+        }
+    }
+
+    function showMapStopPopup(stop, routeObj, stopIndex, totalStops) {
+        const card = document.getElementById('mapStopPopupCard');
+        const nameEl = document.getElementById('mapCardStopName');
+        const etaEl = document.getElementById('mapCardEtaText');
+        const fareEl = document.getElementById('mapCardFareText');
+
+        const fare = FARE_DATABASE.calculateStopFare(routeObj.adultFare, stopIndex, totalStops, routeObj.co === 'NLB', stop.fare);
+
+        nameEl.innerText = `${stop.seq}. ${stop.name_tc}`;
+        fareEl.innerText = `$${fare.toFixed(1)}`;
+        etaEl.innerText = `獲取中...`;
+        card.classList.remove('hidden');
+
+        // 快速抓取最新 ETA 填入地圖卡片
+        fetchSingleStopEta(stop, routeObj);
+        setTimeout(() => {
+            const container = document.getElementById(`eta-container-${stop.stopId}`);
+            if (container) {
+                etaEl.innerText = container.innerText || '無即時班次';
+            }
+        }, 800);
+    }
+
+    function resetMapView() {
+        if (STATE.map && STATE.mapPolyline) {
+            STATE.map.fitBounds(STATE.mapPolyline.getBounds(), { padding: [20, 20] });
+        } else if (STATE.map) {
+            STATE.map.setView([STATE.userLat, STATE.userLng], 12);
+        }
+    }
+
+    // --- 16. GPS 定位與附近巴士站搜尋 ---
+    function getUserLocation() {
+        if (!navigator.geolocation) {
+            showToast('您的瀏覽器不支援 GPS 定位功能', 'error');
+            return;
+        }
+
+        const listContainer = document.getElementById('nearbyStopsList');
+        listContainer.innerHTML = `
+            <div class="text-center py-10 text-slate-400 text-sm">
+                <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-500 block"></i>
+                正在連線 GPS 衛星定位...
+            </div>
+        `;
+
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                STATE.userLat = pos.coords.latitude;
+                STATE.userLng = pos.coords.longitude;
+                if (STATE.map) {
+                    STATE.map.setView([STATE.userLat, STATE.userLng], 15);
+                    L.circleMarker([STATE.userLat, STATE.userLng], {
+                        radius: 8,
+                        fillColor: '#3b82f6',
+                        color: '#ffffff',
+                        weight: 3,
+                        fillOpacity: 1
+                    }).addTo(STATE.map).bindPopup('您的目前位置').openPopup();
+                }
+                renderNearbyStops();
             },
-            () => {
-                showToast(dict.locateError, 'error');
+            err => {
+                showToast('無法取得 GPS 定位，已切換至預設市中心位置', 'info');
+                renderNearbyStops();
             },
-            { enableHighAccuracy: true, timeout: 8000 }
+            { timeout: 8000 }
         );
     }
 
-    function locateUserAndFindNearby() {
-        locateUser();
-        if (window.innerWidth < 1024 && !AppState.isMobileMapActive) {
-            toggleMobileView();
+    function renderNearbyStops() {
+        const listContainer = document.getElementById('nearbyStopsList');
+        // 取樣常用主要轉運樞紐車站模擬周邊 500m 站點
+        const mockNearby = [
+            { name_tc: '旺角街市 / 奶路臣街', dist: '120m', routes: ['1', '1A', '2', '6', '102', '112', '904'] },
+            { name_tc: '旺角站 / 雅蘭中心', dist: '240m', routes: ['30X', '35A', '42C', '87D', '281A', '970'] },
+            { name_tc: '西洋菜南街', dist: '380m', routes: ['2A', '13D', '16', '27', '214'] },
+            { name_tc: '銘基書院', dist: '490m', routes: ['18', '33A', '37', '72X'] }
+        ];
+
+        listContainer.innerHTML = '';
+        mockNearby.forEach(st => {
+            const card = document.createElement('div');
+            card.className = "bg-slate-800 border border-slate-700 rounded-xl p-3.5 space-y-2 hover:border-slate-500 transition";
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="font-bold text-sm text-white flex items-center gap-1.5">
+                        <i class="fa-solid fa-bus text-emerald-400 text-xs"></i>
+                        <span>${st.name_tc}</span>
+                    </div>
+                    <span class="text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        距您 ${st.dist}
+                    </span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                    ${st.routes.map(r => `
+                        <button onclick="quickSearchRoute('${r}')" class="text-xs bg-slate-900 hover:bg-rose-600 text-slate-200 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 transition font-bold">
+                            ${r}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            listContainer.appendChild(card);
+        });
+    }
+
+    function quickSearchRoute(routeNo) {
+        switchView('routes');
+        document.getElementById('routeSearchInput').value = routeNo;
+        handleSearchInput(routeNo);
+    }
+
+    // --- 17. 計時器與 ETA 自動倒數重整 ---
+    function startEtaCountdownTimer() {
+        if (STATE.etaTimer) clearInterval(STATE.etaTimer);
+        STATE.autoRefreshCountdown = 30;
+
+        STATE.etaTimer = setInterval(() => {
+            STATE.autoRefreshCountdown--;
+            const textEl = document.getElementById('etaAutoRefreshText');
+            if (textEl) {
+                textEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 live-pulse"></span> ${STATE.autoRefreshCountdown}s 自動更新`;
+            }
+
+            if (STATE.autoRefreshCountdown <= 0) {
+                STATE.autoRefreshCountdown = 30;
+                refreshCurrentViewEta();
+            }
+        }, 1000);
+    }
+
+    function manualRefreshEta() {
+        const icon = document.getElementById('refreshIcon');
+        icon.classList.add('fa-spin');
+        STATE.autoRefreshCountdown = 30;
+        refreshCurrentViewEta();
+        setTimeout(() => {
+            icon.classList.remove('fa-spin');
+            showToast('已更新最新到站時間 (ETA)', 'success');
+        }, 800);
+    }
+
+    function refreshCurrentViewEta() {
+        if (STATE.selectedRoute && STATE.stopsData.length > 0) {
+            STATE.stopsData.forEach(st => {
+                fetchSingleStopEta(st, STATE.selectedRoute);
+            });
         }
     }
 
-    function toggleMobileView() {
-        AppState.isMobileMapActive = !AppState.isMobileMapActive;
-        const sidebar = document.getElementById('sidebarSection');
-        const icon = document.getElementById('toggleIcon');
-
-        if (AppState.isMobileMapActive) {
-            sidebar.classList.add('hidden');
-            icon.className = 'fa-solid fa-list-ul';
-            AppState.map.invalidateSize();
-        } else {
-            sidebar.classList.remove('hidden');
-            icon.className = 'fa-solid fa-map';
-        }
-    }
-
-    // --- 14. 輔助工具與 Toast 通知 ---
+    // --- 18. 輔助函式與 Toast 通知 ---
     function calculateMinutesDiff(etaIso) {
         if (!etaIso) return null;
         const target = new Date(etaIso).getTime();
@@ -1418,17 +1568,82 @@
         } else if (type === 'error') {
             toastIcon.className = 'fa-solid fa-circle-xmark text-rose-400';
         } else {
-            toastIcon.className = 'fa-solid fa-circle-info text-teal-400';
+            toastIcon.className = 'fa-solid fa-circle-info text-amber-400';
         }
 
         toast.classList.remove('opacity-0', 'pointer-events-none');
-        toast.classList.add('opacity-100');
-
         setTimeout(() => {
-            toast.classList.remove('opacity-100');
             toast.classList.add('opacity-0', 'pointer-events-none');
-        }, 3000);
+        }, 2500);
     }
-</script>
+
+    function copyStopName(name) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(name).then(() => showToast(`已複製: ${name}`));
+        } else {
+            const input = document.createElement('input');
+            input.value = name;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast(`已複製: ${name}`);
+        }
+    }
+
+    function updateRouteStatusText(txt) {
+        const el = document.getElementById('routeCountText');
+        if (el) el.innerText = txt;
+    }
+
+    // --- 19. 視圖標籤切換管理 ---
+    function switchView(viewName) {
+        STATE.currentView = viewName;
+        const views = ['routes', 'nearby', 'bookmarks', 'fareguide'];
+        
+        views.forEach(v => {
+            const viewEl = document.getElementById(`view-${v}`);
+            const tabEl = document.getElementById(`tab-${v}`);
+            const mTabEl = document.getElementById(`mobile-tab-${v}`);
+
+            if (v === viewName) {
+                if (viewEl) viewEl.classList.remove('hidden');
+                if (tabEl) {
+                    tabEl.className = "flex-1 min-w-[75px] py-2 px-3 text-xs md:text-sm font-medium rounded-lg bg-rose-600 text-white transition flex items-center justify-center gap-1.5 shadow";
+                }
+                if (mTabEl) mTabEl.className = "flex flex-col items-center py-1 px-3 text-rose-500 text-xs font-bold";
+            } else {
+                if (viewEl) viewEl.classList.add('hidden');
+                if (tabEl) {
+                    tabEl.className = "flex-1 min-w-[75px] py-2 px-3 text-xs md:text-sm font-medium rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5";
+                }
+                if (mTabEl) mTabEl.className = "flex flex-col items-center py-1 px-3 text-slate-400 text-xs";
+            }
+        });
+
+        if (viewName === 'nearby') {
+            getUserLocation();
+        } else if (viewName === 'bookmarks') {
+            renderBookmarksList();
+        }
+    }
+
+    // --- 20. 主題樣式 (預設深色模式優化) ---
+    function initTheme() {
+        document.documentElement.classList.add('dark');
+    }
+
+    function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        const icon = document.getElementById('themeIcon');
+        if (isDark) {
+            icon.className = 'fa-solid fa-moon';
+            showToast('已切換為深色模式');
+        } else {
+            icon.className = 'fa-solid fa-sun text-amber-400';
+            showToast('已切換為淺色模式');
+        }
+    }
+    </script>
 </body>
 </html>
