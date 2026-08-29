@@ -1,58 +1,31 @@
-🚌 香港即時巴士路線指南 HK Bus Express (PWA)
+# 香港巴士通 HK Bus Express 🚌
 
-HK Bus Express 是一個輕量、快速且響應式的香港即時巴士路線指南 Progressive Web App (PWA)。直接透過香港政府「資料一線通」開放 API 連線取得九龍巴士 (KMB) 及城巴 (Citybus) 的即時到站時間 (ETA) 與路線資訊，並提供互動地圖和 GPS 定位功能。
+全港巴士即時到站資訊平台，整合 **九龍巴士 (KMB)**、**城巴 (CTB)** 及 **新大嶼山巴士 (NLB)** 數據。
 
-✨ 主要功能 (Features)
+## 🌟 核心功能 (Key Features)
 
-⚡ 即時到站時間 (Live ETA)：即時獲取九巴與城巴的最新班次預計到站時間，支援自動每 5 分鐘刷新。
+* **三巴數據整合**：同時支援九巴、城巴及新大嶼山巴士路線搜尋與到站時間。
+* **實時抵站時間 (ETA)**：每 15 秒自動更新班次，提供倒數計時與狀態提示。
+* **詳細車費系統**：支援新大嶼山巴士平日與假日雙軌票價顯示，標註政府 $2 乘車優惠。
+* **互動式路線地圖**：採用 Leaflet.js 繪製路線軌跡與巴士站標記，支援點擊車站聚焦。
+* **中英文雙語介面**：提供繁體中文與英文即時切換功能。
+* **全響應式設計**：
+  * 桌面端：雙欄分割畫面（左側路線 ETA 面板 + 右側互動地圖）。
+  * 行動端：觸控友善底部抽屜與地圖/清單一鍵切換。
+* **GPS 定位功能**：一鍵獲取目前位置並尋找附近車站。
+* **路線收藏系統**：支援把常用路線儲存至瀏覽器本地快取 (`localStorage`)。
+* **PWA 離線支援**：具備完整的 Service Worker 快取機制與離線使用能力。
 
-🗺️ 互動路線地圖 (Interactive Map)：整合 Leaflet 地圖，清楚標示全線巴士站點位置、序號及路線圖軌跡。
+## 📁 檔案結構 (File Structure)
 
-📍 GPS 定位與距離計算：自動測量您當前位置與鄰近巴士站點的距離（以米/公里顯示）。
-
-📱 PWA 手機 Native 體驗：
-
-支援 Android / iOS「新增至主螢幕 / 安裝 App」獨立視窗運行。
-
-專為手機設計的底部導覽列 (Bottom Navigation Bar) 與 SafeArea 適配。
-
-Service Worker 快取，加速靜態資源載入。
-
-🌐 雙語介面 (Bilingual)：一鍵切換繁體中文及英文介面。
-
-🌙 深色模式 (Dark Mode)：支援日夜間模式切換與系統主題自動配合。
-
-💳 完整車費資訊：提供成人全程、小童半價及 $2 長者優惠，並支援站點分段收費估算。
-
-⭐️ 路線收藏 (Favorites)：快速將常用路線加入收藏，便於日後快速查閱。
-
-📁 專案檔案結構 (Project Structure)
-
+```text
 .
-├── index.html       # 主應用程式 (HTML5 / Tailwind CSS / Leaflet JS / App 邏輯)
-├── manifest.json    # PWA 清單設定檔 (App 名稱、圖示與顯示模式設定)
-├── sw.js            # Service Worker (離線靜態資源快取與 PWA 服務)
-└── README.md        # 專案說明文件
-
-
-開始使用
-
-等待 1~2 分鐘，網站網址 https://kkoo-p.github.io/NextBusHK/。
-
-在手機瀏覽器（iOS Safari / Android Chrome）開啟該網址，點擊「安裝 App」或「新增至主畫面」即可享用如原生 App 般的巴士指南！
-
-🌐 API 資料來源 (Data Sources)
-
-本應用程式之巴士數據均透過公開 API 即時獲取，感謝以下提供者：
-
-DATA.GOV.HK 香港政府資料一線通
-
-九龍巴士 (KMB) Open API
-
-城巴 (Citybus) Open API
-
-📄 聲明與授權 (Disclaimer & License)
-
-本專案採用 MIT License 授權。
-
-本應用程式僅供交通數據參考，所有到站時間數據以巴士公司實時公佈為準。
+├── index.html              # 主程式 (包含 UI 介面、CSS 樣式與邏輯腳本)
+├── manifest.json           # PWA 設定檔 (包含應用程式名稱、主題色與圖示路徑)
+├── sw.js                   # Service Worker (離線快取與網絡優先策略)
+├── apple-touch-icon.png    # iOS 主畫面圖標 (180x180)
+├── icon-192.png            # Android / PWA 標準圖標 (192x192)
+├── icon-512.png            # Splash Screen / PWA 高解析圖標 (512x512)
+├── favicon-32x32.png       # 瀏覽器分頁圖標 (32x32)
+├── favicon-16x16.png       # 瀏覽器分頁圖標 (16x16)
+└── favicon.ico             # 傳統 Favicon 圖標
