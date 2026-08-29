@@ -13,6 +13,11 @@
     <meta name="theme-color" content="#0F172A">
     <meta name="description" content="全港巴士即時到站與車費查詢平台：支援九巴 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB)，提供完整沿途所有車站、分段收費、特惠與互動路線地圖。">
 
+    <!-- Web App 圖標與 Icon 設定 (Favicon & Apple Touch Icon) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23e11d48'/><path d='M20 32 C20 22 26 20 50 20 C74 20 80 22 80 32 L80 66 C80 74 72 76 50 76 C28 76 20 74 20 66 Z' fill='%23ffffff'/><circle cx='35' cy='64' r='6' fill='%230f172a'/><circle cx='65' cy='64' r='6' fill='%230f172a'/><rect x='28' y='30' width='44' height='20' rx='4' fill='%2338bdf8'/></svg>">
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23e11d48'/><path d='M20 32 C20 22 26 20 50 20 C74 20 80 22 80 32 L80 66 C80 74 72 76 50 76 C28 76 20 74 20 66 Z' fill='%23ffffff'/><circle cx='35' cy='64' r='6' fill='%230f172a'/><circle cx='65' cy='64' r='6' fill='%230f172a'/><rect x='28' y='30' width='44' height='20' rx='4' fill='%2338bdf8'/></svg>">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22HK%20Bus%20Express%20%E9%A6%99%E6%B8%AF%E5%B7%B4%E5%A3%AB%E9%80%9A%22,%22short_name%22:%22HKBus%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230F172A%22,%22theme_color%22:%22%230F172A%22}">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -111,11 +116,17 @@
             </div>
 
             <div class="flex items-center space-x-2">
-                <button id="refreshEtaBtn" onclick="manualRefreshEta()" title="更新到站時間" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1 text-xs">
+                <!-- 最後更新時間提示 -->
+                <div class="hidden sm:flex flex-col text-right text-[11px] text-slate-400 mr-1 select-none">
+                    <span>最後更新時間</span>
+                    <span id="lastUpdatedTime" class="font-mono text-emerald-400 font-semibold">--:--:--</span>
+                </div>
+                <!-- 更新時間 / 重新載入按鈕 -->
+                <button id="refreshEtaBtn" onclick="manualRefreshEta()" title="即時更新班次與時間" class="px-3 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold transition flex items-center gap-1.5 text-xs shadow-md shadow-rose-900/30 active:scale-95">
                     <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>
-                    <span class="hidden sm:inline">更新 ETA</span>
+                    <span>更新時間</span>
                 </button>
-                <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 border border-slate-700 transition">
+                <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 border border-slate-700 transition">
                     <i id="themeIcon" class="fa-solid fa-moon"></i>
                 </button>
             </div>
@@ -577,13 +588,20 @@
         initTheme();
         initLeafletMap();
         loadLocalBookmarks();
+        updateLastUpdatedTimestamp();
         // 平行載入九巴全港車站字典與路線總表
         fetchKmbStopsDict();
         await fetchAllRoutes();
         startEtaCountdownTimer();
     };
 
-    // 快取全港九巴車站名稱與座標 (一次性快速字典下載，極大提升查詢速度與完整度)
+    function updateLastUpdatedTimestamp() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('zh-HK', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const el = document.getElementById('lastUpdatedTime');
+        if (el) el.innerText = timeStr;
+    }
+
     async function fetchKmbStopsDict() {
         try {
             const res = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/stop');
@@ -593,11 +611,10 @@
                     STATE.kmbStopsMap.set(s.stop, {
                         name_tc: s.name_tc,
                         name_en: s.name_en,
-                        lat: parseFloat(s.lat),
-                        lng: parseFloat(s.long)
+                        lat: parseFloat(s.lat) || 0,
+                        lng: parseFloat(s.long) || 0
                     });
                 });
-                console.log(`Cached ${STATE.kmbStopsMap.size} KMB stops in memory.`);
             }
         } catch(e) {
             console.warn('Pre-fetching KMB stop dictionary warning:', e);
@@ -1350,10 +1367,18 @@
 
     function manualRefreshEta() {
         STATE.autoRefreshCountdown = 30;
+        updateLastUpdatedTimestamp();
+        const refreshIcon = document.getElementById('refreshIcon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
+        
         if (STATE.selectedRoute && STATE.stopsData.length > 0) {
             STATE.stopsData.forEach(st => fetchSingleStopEta(st, STATE.selectedRoute));
         }
-        showToast('已成功更新所有車站到站時間', 'success');
+
+        setTimeout(() => {
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            showToast('已更新到站時間與最新時間戳記', 'success');
+        }, 600);
     }
 
     function calculateMinutesDiff(etaIso) {
