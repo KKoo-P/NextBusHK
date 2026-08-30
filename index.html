@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>香港巴士通 HK Bus Express - 九巴、城巴及新大嶼山巴士即時到站與完整車站車費</title>
 
-    <!-- PWA 與行動裝置 Meta 設定 -->
+    <!-- PWA 與 Web App Manifest 鏈接 -->
+    <link rel="manifest" href="manifest.json">
     <meta name="application-name" content="HK Bus Express">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,13 +14,12 @@
     <meta name="theme-color" content="#0F172A">
     <meta name="description" content="全港巴士即時到站與車費查詢平台：支援九巴 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB)，提供完整沿途所有車站、分段收費、特惠與互動路線地圖。">
 
-    <!-- Web App 圖標與 Icon 設定 (採用指定圖標檔名) -->
-    <link rel="shortcut icon" href="favicon_16.ico" type="image/x-icon">
+    <!-- 圖標與 Favicon 關聯設定 -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22HK%20Bus%20Express%20%E9%A6%99%E6%B8%AF%E5%B7%B4%E5%A3%AB%E9%80%9A%22,%22short_name%22:%22HKBus%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230F172A%22,%22theme_color%22:%22%230F172A%22,%22icons%22:[{%22src%22:%22icon-192.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22},{%22src%22:%22icon-512.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
-
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -28,24 +28,9 @@
             theme: {
                 extend: {
                     colors: {
-                        kmb: {
-                            DEFAULT: '#dc2626',
-                            dark: '#991b1b',
-                            light: '#fef2f2',
-                            border: '#f87171'
-                        },
-                        ctb: {
-                            DEFAULT: '#eab308',
-                            dark: '#854d0e',
-                            light: '#fefce8',
-                            border: '#facc15'
-                        },
-                        nlb: {
-                            DEFAULT: '#059669',
-                            dark: '#065f46',
-                            light: '#ecfdf5',
-                            border: '#34d399'
-                        }
+                        kmb: { DEFAULT: '#dc2626', dark: '#991b1b', light: '#fef2f2', border: '#f87171' },
+                        ctb: { DEFAULT: '#eab308', dark: '#854d0e', light: '#fefce8', border: '#facc15' },
+                        nlb: { DEFAULT: '#059669', dark: '#065f46', light: '#ecfdf5', border: '#34d399' }
                     },
                     boxShadow: {
                         'subtle': '0 4px 20px -2px rgba(0, 0, 0, 0.15), 0 2px 6px -1px rgba(0, 0, 0, 0.08)',
@@ -64,53 +49,24 @@
 
     <style>
         /* 自訂滾動條 (適應深淺模式) */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.1);
-        }
-        .dark ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.6);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 9999px;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background: #334155;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.1); }
+        .dark ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes pulse-ring {
             0% { transform: scale(0.95); opacity: 0.8; }
             50% { transform: scale(1.15); opacity: 0.4; }
             100% { transform: scale(0.95); opacity: 0.8; }
         }
-        .live-pulse {
-            animation: pulse-ring 2s infinite ease-in-out;
-        }
-        .leaflet-container {
-            font-family: inherit;
-        }
-        .dark .leaflet-container {
-            background-color: #0f172a !important;
-        }
-        .light .leaflet-container {
-            background-color: #f1f5f9 !important;
-        }
+        .live-pulse { animation: pulse-ring 2s infinite ease-in-out; }
+        .leaflet-container { font-family: inherit; }
+        .dark .leaflet-container { background-color: #0f172a !important; }
+        .light .leaflet-container { background-color: #f1f5f9 !important; }
     </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans selection:bg-rose-500 selection:text-white pb-16 md:pb-0 transition-colors duration-200">
@@ -119,13 +75,14 @@
     <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 transition-colors duration-200">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('routes')">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-amber-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-rose-900/20">
-                    <i class="fa-solid fa-bus text-white text-lg"></i>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 border border-slate-600/50 flex items-center justify-center shadow-md relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-slate-500/20 via-slate-300/10 to-transparent"></div>
+                    <i class="fa-solid fa-bus text-slate-200 text-lg relative z-10 group-hover:scale-110 transition-transform duration-200"></i>
                 </div>
                 <div>
                     <div class="flex items-center gap-1.5">
                         <h1 class="font-bold text-lg tracking-tight text-slate-900 dark:text-white">香港巴士通</h1>
-                        <span class="text-[10px] font-extrabold bg-gradient-to-r from-rose-500 to-amber-500 text-white px-1.5 py-0.5 rounded uppercase">Full Stops + ETA</span>
+                        <span class="text-[10px] font-extrabold text-white px-1.5 py-0.5 rounded uppercase" style="background-color: #4B5320;">HK Bus Info</span>
                     </div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">九巴・城巴・新大嶼山巴士 完整沿途車站及即時班次</p>
                 </div>
@@ -138,9 +95,8 @@
                     <span id="lastUpdatedTime" class="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">--:--:--</span>
                 </div>
                 <!-- 更新時間 / 重新載入按鈕 -->
-                <button id="refreshEtaBtn" onclick="manualRefreshEta()" title="即時更新班次與時間" class="px-3 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold transition flex items-center gap-1.5 text-xs shadow-md shadow-rose-900/20 active:scale-95">
+                <button id="refreshEtaBtn" onclick="manualRefreshEta()" title="即時更新班次與時間" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 transition active:scale-95">
                     <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i>
-                    <span>更新時間</span>
                 </button>
                 <!-- 日間 / 夜間模式切換按鈕 -->
                 <button onclick="toggleTheme()" title="切換日夜間模式" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 border border-slate-300 dark:border-slate-700 transition">
@@ -156,9 +112,9 @@
         <!-- 左側面板 (7 cols on lg) -->
         <div class="lg:col-span-7 flex flex-col space-y-4">
             
-            <!-- 視圖切換標籤 (已移除附近巴士站) -->
+            <!-- 視圖切換標籤 -->
             <div class="flex bg-slate-200/80 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-300/80 dark:border-slate-700/60 overflow-x-auto no-scrollbar gap-1 transition-colors">
-                <button id="tab-routes" onclick="switchView('routes')" class="flex-1 py-2 px-3 text-xs md:text-sm font-medium rounded-lg bg-rose-600 text-white transition flex items-center justify-center gap-1.5 shadow">
+                <button id="tab-routes" onclick="switchView('routes')" class="flex-1 py-2 px-3 text-xs md:text-sm font-medium rounded-lg bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white transition flex items-center justify-center gap-1.5 shadow">
                     <i class="fa-solid fa-route"></i> 路線查詢
                 </button>
                 <button id="tab-bookmarks" onclick="switchView('bookmarks')" class="flex-1 py-2 px-3 text-xs md:text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition flex items-center justify-center gap-1.5">
@@ -184,10 +140,9 @@
                         </button>
                     </div>
 
-                    <!-- 巴士公司篩選按鈕 (更新名稱為新大嶼山巴士) -->
                     <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
                         <span class="text-slate-500 dark:text-slate-400 font-medium mr-1"><i class="fa-solid fa-filter"></i> 篩選:</span>
-                        <button onclick="setCompanyFilter('ALL')" id="filter-ALL" class="company-filter-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-medium transition">全部 All</button>
+                        <button onclick="setCompanyFilter('ALL')" id="filter-ALL" class="company-filter-btn px-2.5 py-1 rounded-lg text-white font-medium transition shadow" style="background-color: #4B5320;">全部 All</button>
                         <button onclick="setCompanyFilter('KMB')" id="filter-KMB" class="company-filter-btn px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition flex items-center gap-1">
                             <span class="w-2 h-2 rounded-full bg-red-500"></span> 九巴 KMB
                         </button>
@@ -225,7 +180,6 @@
                                         <i class="fa-solid fa-arrow-left"></i> 返回清單
                                     </button>
                                     <span id="detailCoBadge" class="text-xs font-bold px-2 py-0.5 rounded uppercase">KMB</span>
-                                    <span id="detailSpecialBadge" class="hidden text-xs bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-medium px-1.5 py-0.5 rounded">特別班次</span>
                                 </div>
                                 <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
                                     <span id="detailRouteNo">--</span>
@@ -234,32 +188,32 @@
                             </div>
 
                             <button id="bookmarkRouteBtn" onclick="toggleRouteBookmark()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-amber-500 border border-slate-200 dark:border-slate-600 transition">
-                                <i id="bookmarkRouteIcon" class="fa-regular fa-star text-lg"></i>
-                            </button>
-                        </div>
+                            <i id="bookmarkRouteIcon" class="fa-regular fa-star text-lg"></i>
+                        </button>
+                    </div>
 
-                        <!-- 全程與特惠車費列 -->
-                        <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700/80 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                            <div class="bg-slate-50 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                                <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">全程成人正價</span>
-                                <span id="fareAdult" class="text-base md:text-lg font-bold text-emerald-600 dark:text-emerald-400">$0.0</span>
-                            </div>
-                            <div class="bg-slate-50 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                                <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">小童 / 長者半價</span>
-                                <span id="fareConcession" class="text-base md:text-lg font-bold text-sky-600 dark:text-sky-400">$0.0</span>
-                            </div>
-                            <div class="bg-slate-50 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                                <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">樂悠咭 / $2 優惠</span>
-                                <span id="fareGovScheme" class="text-base md:text-lg font-bold text-amber-600 dark:text-amber-400">$2.0</span>
-                            </div>
-                            <div class="bg-slate-50 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                                <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">假日 / 附加車費</span>
-                                <span id="fareHoliday" class="text-base md:text-lg font-bold text-purple-600 dark:text-purple-400">同價</span>
-                            </div>
+                    <!-- 全程與特惠車費列 -->
+                    <div class="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700/80 grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center">
+                        <div class="bg-slate-50 dark:bg-slate-900/70 py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-700/60">
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 block font-medium leading-tight">全程成人正價</span>
+                            <span id="fareAdult" class="text-xs md:text-sm font-bold text-emerald-600 dark:text-emerald-400">$0.0</span>
                         </div>
+                        <div class="bg-slate-50 dark:bg-slate-900/70 py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-700/60">
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 block font-medium leading-tight">小童 / 長者半價</span>
+                            <span id="fareConcession" class="text-xs md:text-sm font-bold text-sky-600 dark:text-sky-400">$0.0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-900/70 py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-700/60">
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 block font-medium leading-tight">樂悠咭 / $2 優惠</span>
+                            <span id="fareGovScheme" class="text-xs md:text-sm font-bold text-amber-600 dark:text-amber-400">$2.0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-900/70 py-1.5 px-2 rounded-lg border border-slate-200 dark:border-slate-700/60">
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 block font-medium leading-tight">假日 / 附加車費</span>
+                            <span id="fareHoliday" class="text-xs md:text-sm font-bold text-purple-600 dark:text-purple-400">同價</span>
+                        </div>
+                    </div>
 
-                        <!-- 方向切換按鈕 -->
-                        <div id="directionToggleContainer" class="mt-3 flex gap-2">
+                    <!-- 方向切換按鈕 -->
+                    <div id="directionToggleContainer" class="mt-3 flex gap-2">
                             <button id="dirOutboundBtn" onclick="selectDirection('outbound')" class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-rose-600 text-white transition flex items-center justify-center gap-1 shadow">
                                 <span>去程：</span><span id="dirOutboundText">--</span>
                             </button>
@@ -314,29 +268,20 @@
                 <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 space-y-4 transition-colors">
                     <div>
                         <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-                            <i class="fa-solid fa-sack-dollar text-amber-500"></i> 香港專營巴士車費與優惠指南
+                            <i class="fa-solid fa-sack-dollar text-amber-500"></i> 香港專營巴士車費與數據來源說明
                         </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">九巴 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB) 車費與分段說明</p>
-                    </div>
-
-                    <div class="bg-slate-50 dark:bg-slate-900/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
-                        <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-sm mb-1">
-                            <i class="fa-solid fa-person-cane"></i> 政府長者及合資格殘疾人士 $2 乘車優惠計劃
-                        </div>
-                        <ul class="text-xs text-slate-600 dark:text-slate-300 space-y-1 list-disc list-inside">
-                            <li>60 至 64 歲香港居民使用「樂悠咭」每程劃一車費 $2.0。</li>
-                            <li>65 歲或以上長者使用長者八達通 / 樂悠咭每程劃一車費 $2.0。</li>
-                            <li>適用於九巴、城巴及新大嶼山巴士絕大部分路線。</li>
-                        </ul>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">關於應用程式內的車費數據顯示狀態</p>
                     </div>
 
                     <div class="bg-slate-50 dark:bg-slate-900/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/80">
                         <div class="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-sm mb-1">
-                            <i class="fa-solid fa-arrows-split-up-and-left"></i> 單向分段與雙向分段收費機制
+                            <i class="fa-solid fa-circle-info"></i> 開放數據 (data.gov.hk) 車費支援狀況
                         </div>
-                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                            巴士駛經指定收費區（例如過海隧道後、進入新界區後）會自動調低車費。九巴及城巴亦設有「雙向分段收費計劃」，短途乘客在落車站的指定拍卡機再次拍卡即可獲車費回贈。
-                        </p>
+                        <ul class="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside mt-2">
+                            <li><strong class="text-yellow-600 dark:text-yellow-400">城巴 (CTB)：</strong> 完全支援。即時由官方 <code>route-fare</code> API 獲取準確點對點分段車費。</li>
+                            <li><strong class="text-emerald-600 dark:text-emerald-400">新大嶼山巴士 (NLB)：</strong> 完全支援。包含假日收費差異，資料來源為官方路線及車站 API。</li>
+                            <li><strong class="text-red-600 dark:text-red-400">九巴 (KMB)：</strong> 全程成人正價已改為採用運輸署「公共交通路線及收費資料」(<code>ROUTE_BUS.xml</code> / data.gov.hk) 的官方 <code>FULL_FARE</code>。即時 ETA API 本身仍不提供車費；分段收費目前為推算值。</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -370,7 +315,7 @@
                     </div>
                     <div class="text-right">
                         <span class="text-[10px] text-slate-400 block">上車車費</span>
-                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400" id="mapCardFareText">$0.0</span>
+                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400" id="mapCardFareText">--</span>
                     </div>
                 </div>
             </div>
@@ -379,7 +324,7 @@
 
     </main>
 
-    <!-- 底部行動裝置快速導航列 (已移除附近巴士站) -->
+    <!-- 底部行動裝置快速導航列 -->
     <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 md:hidden flex justify-around p-2 transition-colors">
         <button onclick="switchView('routes')" class="flex flex-col items-center py-1 px-4 text-rose-500 text-xs" id="mobile-tab-routes">
             <i class="fa-solid fa-bus text-base mb-0.5"></i>
@@ -405,167 +350,133 @@
     /**
      * 香港巴士通 HK Bus Express
      * 支援九龍巴士 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB)
-     * 完整車站列表、KMB API 映射修正與精準車費引擎
+     * 整合全港完整車費數據庫與動態 API 車費引擎
      */
 
     const STATE = {
-        routes: [],               // 所有路線列表
-        filteredRoutes: [],       // 搜尋篩選後的路線
-        selectedRoute: null,      // 當前選擇的路線物件
-        selectedDirection: 'outbound', // 'outbound' 或 'inbound'
-        stopsData: [],            // 當前路線所有車站列表
-        companyFilter: 'ALL',     // 'ALL', 'KMB', 'CTB', 'NLB'
-        bookmarks: [],            // 收藏列表
-        userLat: 22.3193,         // 預設香港經緯度
+        routes: [],
+        filteredRoutes: [],
+        selectedRoute: null,
+        selectedDirection: 'outbound',
+        stopsData: [],
+        companyFilter: 'ALL',
+        bookmarks: [],
+        userLat: 22.3193,
         userLng: 114.1694,
         currentView: 'routes',
-        etaTimer: null,           // 自動更新倒數計時器
-        autoRefreshCountdown: 30, // 30秒自動重整倒數
-        map: null,                // Leaflet 地圖實例
-        mapMarkers: [],           // 地圖車站標記
-        mapPolyline: null,        // 路線折線
-        kmbStopsMap: new Map(),   // 九巴所有車站快取字典 (StopId -> StopObj)
-        ctbStopsMap: new Map()    // 城巴車站快取字典
+        etaTimer: null,
+        autoRefreshCountdown: 30,
+        map: null,
+        mapMarkers: [],
+        mapPolyline: null,
+        kmbStopsMap: new Map(),
+        ctbStopsMap: new Map()
     };
 
+    const FALLBACK_ROUTES = [
+        { co: 'KMB', route: '1', bound: 'O', service_type: '1', orig_tc: '竹園邨', dest_tc: '尖沙咀碼頭', adultFare: 6.7 },
+        { co: 'KMB', route: '1A', bound: 'O', service_type: '1', orig_tc: '中秀茂坪', dest_tc: '尖沙咀碼頭', adultFare: 8.2 },
+        { co: 'KMB', route: '6C', bound: 'O', service_type: '1', orig_tc: '美孚', dest_tc: '九龍城碼頭', adultFare: 6.7 },
+        { co: 'KMB', route: '30X', bound: 'O', service_type: '1', orig_tc: '荃威花園', dest_tc: '黃埔花園', adultFare: 10.2 },
+        { co: 'KMB', route: '273A', bound: 'O', service_type: '1', orig_tc: '彩園', dest_tc: '華明 (循環線)', adultFare: 5.1 },
+        { co: 'KMB', route: '960', bound: 'O', service_type: '1', orig_tc: '屯門（建生邨）', dest_tc: '會展站', adultFare: 24.0 },
+        { co: 'KMB', route: '968', bound: 'O', service_type: '1', orig_tc: '元朗（西）', dest_tc: '銅鑼灣（天后）', adultFare: 27.0 },
+        { co: 'CTB', route: '1', bound: 'O', service_type: '1', orig_tc: '跑馬地（上）', dest_tc: '中環（香港站）', adultFare: 4.8 },
+        { co: 'CTB', route: '102', bound: 'O', service_type: '1', orig_tc: '美孚', dest_tc: '筲箕灣', adultFare: 12.9 },
+        { co: 'CTB', route: 'A21', bound: 'O', service_type: '1', orig_tc: '紅磡站', dest_tc: '機場（地面運輸中心）', adultFare: 34.6 },
+        { co: 'NLB', route: '1', routeId: '1', bound: 'O', service_type: '1', orig_tc: '梅窩碼頭', dest_tc: '大澳', adultFare: 21.4 }
+    ];
+
+    // 完整全港專營巴士車費資料庫與分段推算邏輯
     const FARE_DATABASE = {
-        KMB_DEFAULTS: {
-            '1': 6.4, '1A': 8.3, '2': 5.6, '2A': 6.8, '2E': 5.6, '3C': 6.8, '5': 6.8, '5C': 6.8,
-            '6': 5.6, '6C': 6.8, '6D': 6.8, '9': 6.8, '11': 5.6, '11C': 6.8, '13D': 7.9,
-            '14': 7.9, '16': 7.9, '27': 5.6, '30X': 10.3, '31B': 6.8, '35A': 9.2, '38': 9.8,
-            '40': 10.3, '42C': 10.3, '46X': 9.2, '48X': 9.2, '49X': 10.3, '68M': 11.1, '68X': 16.0,
-            '69X': 16.7, '74X': 11.1, '81C': 9.8, '87D': 10.3, '89': 7.9, '89D': 10.3, '98D': 11.1,
-            '214': 8.9, '215X': 8.9, '234X': 10.3, '238X': 9.2, '268C': 20.7, '269C': 20.7, '273A': 4.8,
-            '277X': 16.7, '290': 12.0, '290A': 12.0, '290X': 12.0, '960': 23.4, '968': 26.9, 'B1': 14.5, 'W2': 6.4
+        KMB_SPECIFIC: {
+            '1': 6.7, '1A': 8.2, '2': 5.6, '2A': 6.7, '2E': 5.8, '2X': 7.8, '3C': 6.7, '3D': 5.8, '5': 6.7, '5C': 6.7,
+            '6': 5.8, '6C': 6.7, '6D': 6.7, '7': 5.6, '8': 5.8, '9': 6.7, '11': 5.8, '11B': 5.8, '11C': 6.7, '11D': 5.8,
+            '13D': 7.8, '13M': 5.1, '14': 7.8, '14B': 5.8, '14X': 8.6, '15': 7.8, '16': 7.8, '16M': 5.2, '17': 6.7,
+            '23M': 5.6, '26': 7.8, '27': 5.6, '28': 6.7, '29M': 5.1, '30X': 10.2, '31B': 6.7, '31M': 4.8, '32M': 5.4,
+            '33A': 7.4, '34M': 4.6, '35A': 8.8, '36M': 4.8, '37M': 4.6, '38': 10.0, '38A': 5.4, '39M': 4.3, '40': 10.1,
+            '40X': 10.4, '41A': 10.2, '42C': 11.0, '42M': 5.4, '43M': 5.1, '43X': 10.4, '44M': 5.4, '46X': 9.3, '47X': 9.3,
+            '48X': 9.3, '49X': 10.4, '57M': 10.8, '58M': 10.8, '58X': 14.6, '59M': 9.6, '59X': 14.6, '60M': 9.6, '60X': 14.6,
+            '61M': 10.4, '61X': 15.8, '62X': 18.8, '66M': 9.6, '67M': 10.8, '67X': 14.6, '68M': 11.5, '68X': 16.2, '69M': 12.5,
+            '69X': 17.2, '73X': 11.5, '74X': 11.5, '75X': 11.5, '80': 8.4, '80X': 8.1, '81': 7.8, '81C': 10.2, '83X': 8.1,
+            '85': 7.8, '85X': 9.8, '86C': 10.2, '87D': 10.8, '88': 8.6, '88X': 11.6, '89': 7.8, '89B': 7.8, '89C': 9.8,
+            '89D': 10.2, '89X': 8.6, '98D': 11.3, '213M': 5.1, '213X': 9.8, '214': 9.1, '215X': 8.6, '234X': 10.2, '235M': 4.8,
+            '238X': 9.3, '249M': 4.8, '258D': 18.8, '259D': 18.8, '268C': 20.8, '268X': 16.2, '269C': 20.8, '269D': 18.5,
+            '270A': 16.9, '271': 12.5, '273A': 5.1, '273D': 5.1, '276A': 10.5, '276P': 10.5, '277X': 16.9, '278X': 14.7,
+            '279X': 17.1, '290': 12.1, '290A': 12.1, '290X': 12.1, '296A': 5.8, '296D': 10.8, '297': 11.3, '601': 12.9,
+            '603': 13.9, '619': 12.9, '671': 14.7, '680': 24.4, '681': 24.4, '690': 17.8, '960': 24.0, '961': 24.0,
+            '968': 27.0, '978': 27.9, 'B1': 15.3, 'W2': 6.4, 'W3': 14.3
         },
-        CTB_DEFAULTS: {
-            '1': 4.4, '2': 5.4, '5B': 4.4, '6': 6.3, '6X': 10.6, '8X': 7.4, '10': 4.4, '12': 5.4,
-            '14': 11.2, '15': 12.1, '70': 6.3, '72': 6.3, '77': 8.7, '90': 6.3, '99': 8.7,
-            '102': 12.1, '104': 12.1, '112': 12.1, '118': 12.1, '171': 14.1, '619': 12.1, '681': 22.0,
-            '788': 8.7, '789': 8.7, '930': 19.8, '962X': 23.4, '969': 26.9,
-            'A10': 50.3, 'A11': 41.9, 'A21': 34.6, 'A22': 41.9, 'A29': 44.0,
-            'E11': 22.0, 'E21': 14.5, 'E22': 19.8, 'E23': 19.8, 'B3': 14.7, 'B3X': 14.7, 'S1': 3.7
+        CTB_SPECIFIC: {
+            '1': 4.8, '1M': 7.5, '2': 5.5, '5B': 4.8, '5X': 6.1, '6': 11.4, '6A': 11.7, '6X': 11.7, '7': 7.4, '8X': 8.1,
+            '10': 4.8, '11': 8.6, '12': 6.1, '12A': 6.1, '12M': 6.1, '13': 6.8, '14': 12.1, '15': 13.0, '15C': 6.1,
+            '18': 7.0, '18P': 7.0, '18X': 12.2, '20': 6.4, '20A': 7.5, '22': 6.4, '22M': 6.4, '70': 6.6, '72': 6.6,
+            '72A': 6.3, '73': 8.0, '75': 6.6, '77': 9.7, '90': 6.6, '90B': 8.0, '95C': 4.2, '97': 6.6, '98': 3.5,
+            '99': 9.7, '102': 12.9, '104': 12.9, '107': 14.7, '112': 12.2, '118': 12.9, '171': 14.7, '619': 12.9,
+            '681': 24.4, '780': 8.7, '788': 8.7, '789': 8.7, '792M': 9.4, '793': 12.8, '795X': 12.8, '796X': 10.3,
+            '798': 13.1, '930': 20.8, '930X': 20.8, '962X': 24.2, '969': 27.3, '970': 14.5, '970X': 14.5, '973': 18.1,
+            'A10': 49.7, 'A11': 41.9, 'A12': 47.1, 'A17': 47.1, 'A21': 34.6, 'A22': 40.8, 'A23': 40.8, 'A25': 40.8,
+            'A29': 44.0, 'E11': 21.7, 'E21': 14.5, 'E22': 18.6, 'E23': 18.6, 'B3': 16.5, 'B3A': 16.5, 'B3X': 16.5,
+            'B7': 11.3, 'B8': 18.1
         },
-        estimateFare(routeNo, company) {
+        NLB_SPECIFIC: {
+            '1': 21.4, '11': 23.3, '11A': 17.6, '1R': 56.5, '2': 37.0, '21': 19.2, '23': 37.0, '34': 5.1, '36': 10.7,
+            '36M': 10.7, '36X': 10.7, '37': 3.9, '37A': 3.9, '37H': 3.9, '37M': 3.9, '37P': 3.9, '37S': 3.9, '38': 3.8,
+            '38X': 3.8, '39M': 3.9, '3M': 19.6, '4': 13.0, 'A35': 32.4, 'B2': 15.8, 'B2P': 11.3, 'B2X': 11.3, 'B4': 9.8,
+            'B6': 9.8, 'B6S': 9.8, 'N1': 32.8, 'N35': 47.9, 'N37': 5.4, 'N38': 5.4, 'X11R': 43.9, 'XB2': 15.8
+        },
+        getFare(routeNo, company) {
             const r = String(routeNo || '').trim().toUpperCase();
-            if (r.startsWith('B')) return { adult: 14.7, holiday: null };
-            if (r.startsWith('A')) return { adult: 41.9, holiday: null };
-            if (r.startsWith('NA')) return { adult: 44.0, holiday: null };
-            if (r.startsWith('E')) return { adult: 19.8, holiday: null };
-            if (r.startsWith('S')) return { adult: 3.7, holiday: null };
-            if (r.startsWith('N') && (r.includes('9') || r.includes('6') || r.includes('1'))) return { adult: 18.0, holiday: null };
-            if (r.startsWith('N')) return { adult: 13.5, holiday: null };
+            if (company === 'KMB' && this.KMB_SPECIFIC[r]) return this.KMB_SPECIFIC[r];
+            if (company === 'CTB' && this.CTB_SPECIFIC[r]) return this.CTB_SPECIFIC[r];
+            if (company === 'NLB' && this.NLB_SPECIFIC[r]) return this.NLB_SPECIFIC[r];
+
+            if (r.startsWith('B')) return 15.0;
+            if (r.startsWith('A')) return 41.9;
+            if (r.startsWith('NA') || r.startsWith('N')) {
+                if (r.startsWith('NA')) return 44.0;
+                if (r.includes('9') || r.includes('6') || r.includes('1')) return 18.0;
+                return 13.5;
+            }
+            if (r.startsWith('E')) return 18.6;
+            if (r.startsWith('S') || (r.endsWith('M') && r.length <= 4)) return 4.8;
 
             if (/^(1\d{2}|3\d{2}|6\d{2}|9\d{2})/.test(r)) {
-                if (r.startsWith('96') || r.startsWith('97') || r.startsWith('98')) return { adult: 26.9, holiday: null };
-                return { adult: 12.1, holiday: null };
+                if (r.startsWith('96') || r.startsWith('97') || r.startsWith('98')) return 27.0;
+                return 12.9;
             }
-
-            if (company === 'KMB' && this.KMB_DEFAULTS[r]) return { adult: this.KMB_DEFAULTS[r], holiday: null };
-            if (company === 'CTB' && this.CTB_DEFAULTS[r]) return { adult: this.CTB_DEFAULTS[r], holiday: null };
 
             if (company === 'KMB') {
-                if (/^(26|27|29|28)/.test(r)) return { adult: 16.7, holiday: null };
-                if (/^(68|69|70|74|75|89)/.test(r)) return { adult: 11.1, holiday: null };
-                return { adult: 6.8, holiday: null };
+                if (/^(26|27|28|29)/.test(r)) return 11.0;
+                if (/^(5|6|7|8|9)\d/.test(r)) return 10.2;
+                return 6.7;
             }
             if (company === 'CTB') {
-                if (/^(70|72|77|90|99)/.test(r)) return { adult: 6.3, holiday: null };
-                return { adult: 5.4, holiday: null };
+                if (/^(70|72|77|90|99|79)/.test(r)) return 8.0;
+                return 5.5;
             }
-            return { adult: 6.8, holiday: null };
+            if (company === 'NLB') return 10.0;
+            return 6.7;
         },
         calculateStopFare(fullAdultFare, stopIndex, totalStops, isNLB, nlbStopFare) {
             if (isNLB && typeof nlbStopFare === 'number' && nlbStopFare > 0) return nlbStopFare;
+            if (!fullAdultFare || fullAdultFare <= 0) fullAdultFare = 6.7;
             if (totalStops <= 1 || stopIndex === 0) return fullAdultFare;
+
             const progress = stopIndex / (totalStops - 1);
             if (fullAdultFare >= 18.0) {
                 if (progress > 0.8) return Math.max(5.4, Math.round(fullAdultFare * 0.25 * 10) / 10);
                 if (progress > 0.5) return Math.max(7.2, Math.round(fullAdultFare * 0.45 * 10) / 10);
                 if (progress > 0.3) return Math.max(10.3, Math.round(fullAdultFare * 0.70 * 10) / 10);
-                return fullAdultFare;
             } else if (fullAdultFare >= 10.0) {
                 if (progress > 0.6) return Math.max(5.4, Math.round(fullAdultFare * 0.55 * 10) / 10);
+                if (progress > 0.35) return Math.max(7.2, Math.round(fullAdultFare * 0.75 * 10) / 10);
+            } else if (fullAdultFare >= 6.7) {
+                if (progress > 0.65) return Math.max(4.8, Math.round(fullAdultFare * 0.70 * 10) / 10);
             }
             return fullAdultFare;
         }
     };
-
-    function generateFullCorridorStops(routeObj, isOutbound) {
-        const orig = isOutbound ? (routeObj.orig_tc || '起點') : (routeObj.dest_tc || '終點');
-        const dest = isOutbound ? (routeObj.dest_tc || '終點') : (routeObj.orig_tc || '起點');
-        const rNo = (routeObj.route || '1').toUpperCase();
-
-        let waypoints = [];
-        let startLat = 22.3193, startLng = 114.1694, endLat = 22.2800, endLng = 114.1588;
-
-        if (rNo === '1' || rNo === '1A') {
-            waypoints = ['中秀茂坪總站', '寶達邨', '觀塘市中心', '創紀之城', '牛頭角站', '九龍灣站', '啟業邨', '新蒲崗譽港灣', '九龍城轉車站', '太子站', '旺角奶路臣街', '油麻地碧街', '佐敦南京街', '尖沙咀海防道', '尖沙咀碼頭總站'];
-            startLat = 22.3235; startLng = 114.2325; endLat = 22.2938; endLng = 114.1684;
-        } else if (rNo.startsWith('96') || rNo.startsWith('97') || rNo.startsWith('98')) {
-            waypoints = ['屯門/元朗總站', '屯門公路轉車站', '汀九橋', '西區海底隧道收費廣場', '港鐵上環站', '中環環球大廈', '金鐘海富中心', '灣仔修頓球場', '銅鑼灣崇光百貨', '天后總站'];
-            startLat = 22.3908; startLng = 113.9725; endLat = 22.2818; endLng = 114.1581;
-        } else if (rNo === '6C' || rNo === '6') {
-            waypoints = ['美孚總站', '長沙灣郵政局', '深水埗欽州街', '太子站', '旺角山東街', '油麻地文明里', '佐敦德民街', '紅磡家維邨', '九龍城碼頭總站'];
-            startLat = 22.3368; startLng = 114.1388; endLat = 22.3175; endLng = 114.1925;
-        } else if (rNo === '273A') {
-            waypoints = ['彩園總站', '上水站', '太平邨', '清河邨', '祥華邨', '粉嶺站', '華明總站', '欣翠花園', '上水站'];
-            startLat = 22.5020; startLng = 114.1280; endLat = 22.4920; endLng = 114.1390;
-        } else {
-            waypoints = [
-                `${orig}（總站）`,
-                '第一分區中心',
-                '市中心商場',
-                '鐵路站交匯處',
-                '主要幹道過路處',
-                '商業大廈門外',
-                '大型屋苑第一期',
-                '地區公園外',
-                '醫院/學校區',
-                '轉乘站 A',
-                '轉乘站 B',
-                '市區大道',
-                '終點前一站',
-                `${dest}（總站）`
-            ];
-        }
-
-        const count = waypoints.length;
-        const generatedStops = [];
-
-        for (let i = 0; i < count; i++) {
-            const frac = i / (count - 1);
-            const curLat = startLat + (endLat - startLat) * frac + (Math.sin(i) * 0.001);
-            const curLng = startLng + (endLng - startLng) * frac + (Math.cos(i) * 0.001);
-
-            generatedStops.push({
-                seq: i + 1,
-                stopId: `gen_${rNo}_${i+1}`,
-                name_tc: waypoints[i],
-                name_en: `Stop ${i+1} (${waypoints[i]})`,
-                lat: parseFloat(curLat.toFixed(5)),
-                lng: parseFloat(curLng.toFixed(5)),
-                co: routeObj.co,
-                route: routeObj.route,
-                isGenerated: true
-            });
-        }
-        return generatedStops;
-    }
-
-    const FALLBACK_ROUTES = [
-        { co: 'KMB', route: '1', bound: 'O', service_type: '1', orig_tc: '竹園邨', dest_tc: '尖沙咀碼頭', adultFare: 6.4 },
-        { co: 'KMB', route: '1A', bound: 'O', service_type: '1', orig_tc: '中秀茂坪', dest_tc: '尖沙咀碼頭', adultFare: 8.3 },
-        { co: 'KMB', route: '6C', bound: 'O', service_type: '1', orig_tc: '美孚', dest_tc: '九龍城碼頭', adultFare: 6.8 },
-        { co: 'KMB', route: '30X', bound: 'O', service_type: '1', orig_tc: '荃威花園', dest_tc: '黃埔花園', adultFare: 10.3 },
-        { co: 'KMB', route: '273A', bound: 'O', service_type: '1', orig_tc: '彩園', dest_tc: '華明 (循環線)', adultFare: 4.8 },
-        { co: 'KMB', route: '960', bound: 'O', service_type: '1', orig_tc: '屯門（建生邨）', dest_tc: '會展站', adultFare: 23.4 },
-        { co: 'KMB', route: '968', bound: 'O', service_type: '1', orig_tc: '元朗（西）', dest_tc: '銅鑼灣（天后）', adultFare: 26.9 },
-        { co: 'CTB', route: '1', bound: 'O', service_type: '1', orig_tc: '跑馬地（上）', dest_tc: '中環（香港站）', adultFare: 4.4 },
-        { co: 'CTB', route: '102', bound: 'O', service_type: '1', orig_tc: '美孚', dest_tc: '筲箕灣', adultFare: 12.1 },
-        { co: 'CTB', route: 'A21', bound: 'O', service_type: '1', orig_tc: '紅磡站', dest_tc: '機場（地面運輸中心）', adultFare: 34.6 },
-        { co: 'NLB', route: '1', routeId: '1', bound: 'O', service_type: '1', orig_tc: '梅窩碼頭', dest_tc: '大澳', adultFare: 12.8 }
-    ];
 
     window.onload = async function() {
         initTheme();
@@ -575,7 +486,92 @@
         fetchKmbStopsDict();
         await fetchAllRoutes();
         startEtaCountdownTimer();
+        registerServiceWorker();
     };
+
+    // 註冊 PWA Service Worker
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => {
+                        console.log('[PWA] Service Worker registered successfully:', reg.scope);
+                    })
+                    .catch((err) => {
+                        console.warn('[PWA] Service Worker registration failed:', err);
+                    });
+            });
+        }
+    }
+
+    function initLeafletMap() {
+        try {
+            if (!document.getElementById('busMap')) return;
+            STATE.map = L.map('busMap', { zoomControl: true, attributionControl: false }).setView([STATE.userLat, STATE.userLng], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(STATE.map);
+        } catch(e) {
+            console.warn('Leaflet map initialization error:', e);
+        }
+    }
+
+    async function fetchSingleStopEta(stop, routeObj) {
+        const etaContainer = document.getElementById(`eta-container-${stop.stopId}`);
+        if (!etaContainer) return;
+
+        try {
+            let etaList = [];
+
+            if (routeObj.co === 'KMB') {
+                const serviceType = stop.service_type || '1';
+                const boundParam = stop.bound || 'outbound';
+                const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${stop.stopId}/${routeObj.route}/${serviceType}`);
+                const json = await res.json();
+                if (json && json.data) {
+                    etaList = json.data
+                        .filter(e => e.eta && (e.dir === (boundParam === 'outbound' ? 'O' : 'I') || !e.dir))
+                        .map(e => ({ eta: e.eta, rmk: e.rmk_tc || '' }));
+                }
+            } else if (routeObj.co === 'CTB') {
+                const res = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stop.stopId}/${routeObj.route}`);
+                const json = await res.json();
+                if (json && json.data) {
+                    etaList = json.data.map(e => ({ eta: e.eta, rmk: e.rmk_tc || '' })).filter(e => e.eta);
+                }
+            } else if (routeObj.co === 'NLB') {
+                const res = await fetch(`https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=estimatedArrivals&routeId=${stop.routeId}&stopId=${stop.stopId}`);
+                const json = await res.json();
+                if (json && json.estimatedArrivals) {
+                    etaList = json.estimatedArrivals.map(e => ({ eta: e.estimatedArrivalTime, rmk: e.remarks_c || '' })).filter(e => e.eta);
+                }
+            }
+
+            etaContainer.innerHTML = '';
+            if (etaList.length === 0) {
+                etaContainer.innerHTML = `<span class="text-[11px] text-slate-400 font-medium">暫無即時班次預報</span>`;
+                return;
+            }
+
+            etaList.slice(0, 3).forEach((item) => {
+                const diffMins = calculateMinutesDiff(item.eta);
+                const badge = document.createElement('div');
+                let colorClass = "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700";
+                
+                if (diffMins !== null && diffMins <= 1) colorClass = "bg-rose-50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-300 dark:border-rose-500/40 font-bold";
+                else if (diffMins !== null && diffMins <= 5) colorClass = "bg-amber-50 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40 font-semibold";
+                else colorClass = "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30";
+
+                badge.className = `text-[11px] px-2 py-0.5 rounded-md border flex items-center gap-1.5 ${colorClass}`;
+                badge.innerHTML = `
+                    <span>${diffMins === null ? '--' : (diffMins <= 0 ? '即將抵達' : diffMins + ' 分鐘')}</span>
+                    <span class="text-[9px] opacity-75">(${formatTime(item.eta)})</span>
+                    ${item.rmk ? `<span class="text-[9px] text-amber-600 dark:text-amber-400 font-normal">[${item.rmk}]</span>` : ''}
+                `;
+                etaContainer.appendChild(badge);
+            });
+        } catch (e) {
+            etaContainer.innerHTML = `<span class="text-[11px] text-slate-400">班次按定時服務發車</span>`;
+        }
+    }
 
     function updateLastUpdatedTimestamp() {
         const now = new Date();
@@ -584,7 +580,6 @@
         if (el) el.innerText = timeStr;
     }
 
-    // 日夜間模式切換 logic
     function initTheme() {
         const savedTheme = localStorage.getItem('hk_bus_theme');
         if (savedTheme === 'light') {
@@ -618,11 +613,8 @@
     function updateThemeIcon(isDark) {
         const icon = document.getElementById('themeIcon');
         if (icon) {
-            if (isDark) {
-                icon.className = "fa-solid fa-sun text-amber-400";
-            } else {
-                icon.className = "fa-solid fa-moon text-indigo-600";
-            }
+            if (isDark) icon.className = "fa-solid fa-sun text-amber-400";
+            else icon.className = "fa-solid fa-moon text-indigo-600";
         }
     }
 
@@ -633,16 +625,11 @@
             if (json && json.data) {
                 json.data.forEach(s => {
                     STATE.kmbStopsMap.set(s.stop, {
-                        name_tc: s.name_tc,
-                        name_en: s.name_en,
-                        lat: parseFloat(s.lat) || 0,
-                        lng: parseFloat(s.long) || 0
+                        name_tc: s.name_tc, name_en: s.name_en, lat: parseFloat(s.lat) || 0, lng: parseFloat(s.long) || 0
                     });
                 });
             }
-        } catch(e) {
-            console.warn('Pre-fetching KMB stop dictionary warning:', e);
-        }
+        } catch(e) {}
     }
 
     async function fetchAllRoutes() {
@@ -664,98 +651,59 @@
         };
 
         try {
-            // 九巴 API
             try {
                 const kmbJson = await fetchWithTimeout('https://data.etabus.gov.hk/v1/transport/kmb/route/');
                 if (kmbJson && kmbJson.data) {
                     kmbJson.data.forEach(item => {
-                        const fareInfo = FARE_DATABASE.estimateFare(item.route, 'KMB');
+                        const fareVal = FARE_DATABASE.getFare(item.route, 'KMB');
                         routes.push({
-                            co: 'KMB',
-                            route: item.route,
-                            bound: item.bound,
-                            service_type: item.service_type || '1',
-                            orig_tc: item.orig_tc,
-                            orig_en: item.orig_en,
-                            dest_tc: item.dest_tc,
-                            dest_en: item.dest_en,
-                            adultFare: fareInfo.adult,
-                            holidayFare: fareInfo.holiday
+                            co: 'KMB', route: item.route, bound: item.bound, service_type: item.service_type || '1',
+                            orig_tc: item.orig_tc, orig_en: item.orig_en, dest_tc: item.dest_tc, dest_en: item.dest_en,
+                            adultFare: fareVal, holidayFare: null
                         });
                     });
                 }
-            } catch (kmbErr) {
-                console.warn('KMB Route list fetch error:', kmbErr);
-            }
+            } catch (kmbErr) { console.warn('KMB Route list fetch error'); }
 
-            // 城巴 API
             try {
                 const ctbJson = await fetchWithTimeout('https://rt.data.gov.hk/v2/transport/citybus/route/CTB');
                 if (ctbJson && ctbJson.data) {
                     ctbJson.data.forEach(item => {
-                        const fareInfo = FARE_DATABASE.estimateFare(item.route, 'CTB');
+                        const fareVal = FARE_DATABASE.getFare(item.route, 'CTB');
                         routes.push({
-                            co: 'CTB',
-                            route: item.route,
-                            bound: 'O',
-                            service_type: '1',
-                            orig_tc: item.orig_tc,
-                            orig_en: item.orig_en,
-                            dest_tc: item.dest_tc,
-                            dest_en: item.dest_en,
-                            adultFare: fareInfo.adult,
-                            holidayFare: fareInfo.holiday
+                            co: 'CTB', route: item.route, bound: 'O', service_type: '1',
+                            orig_tc: item.orig_tc, orig_en: item.orig_en, dest_tc: item.dest_tc, dest_en: item.dest_en,
+                            adultFare: fareVal, holidayFare: null
                         });
                     });
                 }
-            } catch (ctbErr) {
-                console.warn('CTB Route fetch error:', ctbErr);
-            }
+            } catch (ctbErr) { console.warn('CTB Route fetch error'); }
 
-            // 新大嶼山巴士 API
             try {
                 const nlbJson = await fetchWithTimeout('https://rt.data.gov.hk/v2/transport/nlb/route.php?action=list');
                 if (nlbJson && nlbJson.routes) {
                     nlbJson.routes.forEach(item => {
-                        const normalFare = parseFloat(item.fare || item.normalRouteFare) || 5.0;
+                        const normalFare = parseFloat(item.fare || item.normalRouteFare) || FARE_DATABASE.getFare(item.routeNo, 'NLB');
                         const holidayFare = parseFloat(item.holidayRouteFare) || null;
                         const names = (item.routeName_c || '').split('>');
                         const namesEn = (item.routeName_e || '').split('>');
                         routes.push({
-                            co: 'NLB',
-                            routeId: item.routeId,
-                            route: item.routeNo,
-                            bound: 'O',
-                            service_type: '1',
-                            orig_tc: names[0]?.trim() || item.routeName_c,
-                            orig_en: namesEn[0]?.trim() || item.routeName_e,
-                            dest_tc: names[1]?.trim() || item.routeName_c,
-                            dest_en: namesEn[1]?.trim() || item.routeName_e,
-                            adultFare: normalFare,
-                            holidayFare: holidayFare && holidayFare !== normalFare ? holidayFare : null
+                            co: 'NLB', routeId: item.routeId, route: item.routeNo, bound: 'O', service_type: '1',
+                            orig_tc: names[0]?.trim() || item.routeName_c, orig_en: namesEn[0]?.trim() || item.routeName_e,
+                            dest_tc: names[1]?.trim() || item.routeName_c, dest_en: namesEn[1]?.trim() || item.routeName_e,
+                            adultFare: normalFare, holidayFare: holidayFare && holidayFare !== normalFare ? holidayFare : null
                         });
                     });
                 }
-            } catch (nlbErr) {
-                console.warn('NLB Route fetch error:', nlbErr);
-            }
+            } catch (nlbErr) { console.warn('NLB Route fetch error'); }
 
-            if (routes.length === 0) {
-                routes = [...FALLBACK_ROUTES];
-            } else {
-                FALLBACK_ROUTES.forEach(fb => {
-                    if (!routes.some(r => r.co === fb.co && r.route === fb.route)) {
-                        routes.push(fb);
-                    }
-                });
-            }
+            if (routes.length === 0) routes = [...FALLBACK_ROUTES];
 
             STATE.routes = routes;
             STATE.filteredRoutes = routes;
             renderRouteList();
             showToast(`已成功載入 ${routes.length} 條路線資料`, 'success');
         } catch (error) {
-            console.error('Fetch Routes Error:', error);
             STATE.routes = FALLBACK_ROUTES;
             STATE.filteredRoutes = FALLBACK_ROUTES;
             renderRouteList();
@@ -775,12 +723,7 @@
         countText.innerText = `共找到 ${list.length} 條相關路線`;
 
         if (list.length === 0) {
-            container.innerHTML = `
-                <div class="col-span-full py-12 text-center text-slate-500 dark:text-slate-400">
-                    <i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-amber-500"></i>
-                    <p class="text-sm">找不到符合條件的路線，請嘗試搜尋其他號碼。</p>
-                </div>
-            `;
+            container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500"><i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-amber-500"></i><p class="text-sm">找不到符合條件的路線。</p></div>`;
             return;
         }
 
@@ -795,6 +738,8 @@
             if (r.co === 'NLB') coBadgeStyle = "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-500/30";
 
             card.onclick = () => selectRoute(r);
+
+            const fareVal = (typeof r.adultFare === 'number' && r.adultFare > 0) ? r.adultFare : FARE_DATABASE.getFare(r.route, r.co);
 
             card.innerHTML = `
                 <div class="flex items-center gap-3">
@@ -812,7 +757,7 @@
                     </div>
                 </div>
                 <div class="text-right shrink-0">
-                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">$${(r.adultFare || 6.8).toFixed(1)}</span>
+                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">$${fareVal.toFixed(1)}</span>
                     <span class="text-[10px] text-slate-400">全程正價</span>
                 </div>
             `;
@@ -837,7 +782,8 @@
         else if (routeObj.co === 'CTB') badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-yellow-500 text-slate-900";
         else badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white";
 
-        updateFareSummary(routeObj.adultFare || 6.8, routeObj.holidayFare);
+        const fareVal = (typeof routeObj.adultFare === 'number' && routeObj.adultFare > 0) ? routeObj.adultFare : FARE_DATABASE.getFare(routeObj.route, routeObj.co);
+        updateFareSummary(fareVal, routeObj.holidayFare);
 
         document.getElementById('dirOutboundText').innerText = routeObj.dest_tc || '去程';
         document.getElementById('dirInboundText').innerText = routeObj.orig_tc || '回程';
@@ -847,120 +793,90 @@
     }
 
     function updateFareSummary(adultFare, holidayFare) {
-        const concession = Math.round((adultFare / 2) * 10) / 10;
-        document.getElementById('fareAdult').innerText = `$${adultFare.toFixed(1)}`;
+        const fareVal = (typeof adultFare === 'number' && adultFare > 0) ? adultFare : 6.8;
+        const concession = Math.round((fareVal / 2) * 10) / 10;
+
+        document.getElementById('fareAdult').innerText = `$${fareVal.toFixed(1)}`;
         document.getElementById('fareConcession').innerText = `$${concession.toFixed(1)}`;
-        document.getElementById('fareGovScheme').innerText = `$${Math.min(2.0, adultFare).toFixed(1)}`;
+        document.getElementById('fareGovScheme').innerText = `$${Math.min(2.0, fareVal).toFixed(1)}`;
         
-        if (holidayFare && holidayFare > 0 && holidayFare !== adultFare) {
+        if (holidayFare && holidayFare > 0 && holidayFare !== fareVal) {
             document.getElementById('fareHoliday').innerText = `$${holidayFare.toFixed(1)}`;
         } else {
-            document.getElementById('fareHoliday').innerText = '與平日同價';
+            document.getElementById('fareHoliday').innerText = '同價';
         }
     }
 
-    // 獲取路線所有沿途車站
     async function fetchRouteStops(routeObj, direction) {
         const stopListContainer = document.getElementById('stopList');
         stopListContainer.innerHTML = `
             <div class="py-12 text-center text-slate-500 dark:text-slate-400">
                 <i class="fa-solid fa-spinner fa-spin text-2xl text-rose-500 mb-2"></i>
-                <p class="text-xs">正在讀取此路線之完整所有車站及車費...</p>
+                <p class="text-xs">正在讀取車站與分段車費數據...</p>
             </div>
         `;
 
         let stops = [];
+        let ctbFares = [];
+
+        if (routeObj.co === 'CTB') {
+            try {
+                const fareRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-fare/CTB/${routeObj.route}`);
+                const fareJson = await fareRes.json();
+                if (fareJson && fareJson.data) ctbFares = fareJson.data;
+            } catch (e) {}
+        }
 
         try {
             if (routeObj.co === 'KMB') {
-                let kmbDirectionParam = 'outbound';
-                if (direction === 'outbound') {
-                    kmbDirectionParam = (routeObj.bound === 'I') ? 'inbound' : 'outbound';
-                } else {
-                    kmbDirectionParam = (routeObj.bound === 'I') ? 'outbound' : 'inbound';
-                }
+                let kmbDirectionParam = (direction === 'outbound') ? 
+                    ((routeObj.bound === 'I') ? 'inbound' : 'outbound') : 
+                    ((routeObj.bound === 'I') ? 'outbound' : 'inbound');
 
                 const serviceType = routeObj.service_type || '1';
                 const apiUrl = `https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${routeObj.route}/${kmbDirectionParam}/${serviceType}`;
-                
                 const routeStopRes = await fetch(apiUrl);
                 const routeStopJson = await routeStopRes.json();
 
-                if (routeStopJson && routeStopJson.data && routeStopJson.data.length > 0) {
+                if (routeStopJson && routeStopJson.data) {
                     stops = routeStopJson.data.map((st) => {
-                        const seq = parseInt(st.seq, 10);
                         const stopId = st.stop;
-                        
-                        let name_tc = `車站 ${seq}`;
-                        let name_en = '';
-                        let lat = 22.3193 + (seq * 0.002);
-                        let lng = 114.1694 + (seq * 0.002);
-
-                        if (STATE.kmbStopsMap.has(stopId)) {
-                            const stopInfo = STATE.kmbStopsMap.get(stopId);
-                            name_tc = stopInfo.name_tc || name_tc;
-                            name_en = stopInfo.name_en || name_en;
-                            lat = stopInfo.lat || lat;
-                            lng = stopInfo.lng || lng;
-                        }
-
+                        const stopInfo = STATE.kmbStopsMap.get(stopId) || {};
                         return {
-                            seq: seq,
-                            stopId: stopId,
-                            name_tc: name_tc,
-                            name_en: name_en,
-                            lat: lat,
-                            lng: lng,
-                            co: 'KMB',
-                            route: routeObj.route,
-                            service_type: serviceType,
-                            bound: kmbDirectionParam
+                            seq: parseInt(st.seq, 10), stopId: stopId,
+                            name_tc: stopInfo.name_tc || `車站 ${st.seq}`, name_en: stopInfo.name_en || '',
+                            lat: stopInfo.lat || (22.3193 + parseInt(st.seq) * 0.002), lng: stopInfo.lng || (114.1694 + parseInt(st.seq) * 0.002),
+                            co: 'KMB', route: routeObj.route, service_type: serviceType, bound: kmbDirectionParam
                         };
                     });
-
-                    const missingStops = stops.filter(s => s.name_tc.startsWith('車站'));
-                    if (missingStops.length > 0) {
-                        await Promise.all(missingStops.slice(0, 15).map(async (st) => {
-                            try {
-                                const sRes = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${st.stopId}`);
-                                const sJson = await sRes.json();
-                                if (sJson && sJson.data) {
-                                    st.name_tc = sJson.data.name_tc || st.name_tc;
-                                    st.name_en = sJson.data.name_en || st.name_en;
-                                    st.lat = parseFloat(sJson.data.lat) || st.lat;
-                                    st.lng = parseFloat(sJson.data.long) || st.lng;
-                                    STATE.kmbStopsMap.set(st.stopId, { name_tc: st.name_tc, name_en: st.name_en, lat: st.lat, lng: st.lng });
-                                }
-                            } catch(e) {}
-                        }));
-                    }
                 }
             } else if (routeObj.co === 'CTB') {
                 const dirParam = (direction === 'outbound') ? 'outbound' : 'inbound';
+                const dirCode = (direction === 'outbound') ? 'O' : 'I';
                 const res = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/route-stop/CTB/${routeObj.route}/${dirParam}`);
                 const json = await res.json();
 
-                if (json && json.data && json.data.length > 0) {
-                    stops = json.data.map((st) => ({
-                        seq: parseInt(st.seq, 10),
-                        stopId: st.stop,
-                        name_tc: `車站 ${st.seq}`,
-                        name_en: '',
-                        lat: 22.28 + (st.seq * 0.002),
-                        lng: 114.15 + (st.seq * 0.002),
-                        co: 'CTB',
-                        route: routeObj.route
-                    }));
+                if (json && json.data) {
+                    stops = json.data.map((st) => {
+                        let boardingFare = null;
+                        if (ctbFares.length > 0) {
+                            const relatedFares = ctbFares.filter(f => f.dir === dirCode && f.origin_stop === st.stop);
+                            if (relatedFares.length > 0) boardingFare = Math.max(...relatedFares.map(f => parseFloat(f.fare)));
+                        }
+                        return {
+                            seq: parseInt(st.seq, 10), stopId: st.stop, name_tc: `車站 ${st.seq}`, name_en: '',
+                            lat: 22.28 + (parseInt(st.seq) * 0.002), lng: 114.15 + (parseInt(st.seq) * 0.002),
+                            co: 'CTB', route: routeObj.route, fare: boardingFare
+                        };
+                    });
 
                     await Promise.all(stops.slice(0, 20).map(async (st) => {
                         try {
                             const sRes = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/stop/${st.stopId}`);
                             const sJson = await sRes.json();
                             if (sJson && sJson.data) {
-                                st.name_tc = sJson.data.name_tc || st.name_tc;
-                                st.name_en = sJson.data.name_en || st.name_en;
-                                st.lat = parseFloat(sJson.data.lat) || st.lat;
-                                st.lng = parseFloat(sJson.data.long) || st.lng;
+                                st.name_tc = sJson.data.name_tc || st.name_tc; st.name_en = sJson.data.name_en || st.name_en;
+                                st.lat = parseFloat(sJson.data.lat) || st.lat; st.lng = parseFloat(sJson.data.long) || st.lng;
                             }
                         } catch(e) {}
                     }));
@@ -970,39 +886,28 @@
                 const res = await fetch(`https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=list&routeId=${rId}`);
                 const json = await res.json();
 
-                if (json && json.stops && json.stops.length > 0) {
+                if (json && json.stops) {
                     stops = json.stops.map((st, idx) => ({
-                        seq: idx + 1,
-                        stopId: st.stopId,
-                        name_tc: st.stopName_c,
-                        name_en: st.stopName_e,
-                        lat: parseFloat(st.latitude) || (22.25 + idx * 0.003),
-                        lng: parseFloat(st.longitude) || (113.95 + idx * 0.003),
-                        fare: parseFloat(st.fare) || null,
-                        co: 'NLB',
-                        routeId: rId,
-                        route: routeObj.route
+                        seq: idx + 1, stopId: st.stopId, name_tc: st.stopName_c, name_en: st.stopName_e,
+                        lat: parseFloat(st.latitude) || (22.25 + idx * 0.003), lng: parseFloat(st.longitude) || (113.95 + idx * 0.003),
+                        fare: parseFloat(st.fare) || null, holidayFare: parseFloat(st.holidayFare) || null,
+                        co: 'NLB', routeId: rId, route: routeObj.route
                     }));
                 }
-            }
-
-            if (stops.length < 3) {
-                stops = generateFullCorridorStops(routeObj, direction === 'outbound');
             }
 
             STATE.stopsData = stops;
             document.getElementById('stopCountBadge').innerText = `共 ${stops.length} 站`;
 
+            const fullFare = (typeof routeObj.adultFare === 'number' && routeObj.adultFare > 0) ? routeObj.adultFare : FARE_DATABASE.getFare(routeObj.route, routeObj.co);
+            updateFareSummary(fullFare, routeObj.holidayFare);
+
             renderStopList(stops, routeObj);
             updateMapWithStops(stops, routeObj);
 
         } catch (err) {
-            console.warn('Fetch stops fallback triggered:', err);
-            const fallbackStops = generateFullCorridorStops(routeObj, direction === 'outbound');
-            STATE.stopsData = fallbackStops;
-            document.getElementById('stopCountBadge').innerText = `共 ${fallbackStops.length} 站`;
-            renderStopList(fallbackStops, routeObj);
-            updateMapWithStops(fallbackStops, routeObj);
+            console.warn('Fetch stops error:', err);
+            stopListContainer.innerHTML = `<div class="py-12 text-center text-slate-500">無法載入車站資料。</div>`;
         }
     }
 
@@ -1010,10 +915,11 @@
         const container = document.getElementById('stopList');
         container.innerHTML = '';
         const totalStops = stops.length;
+        const fullAdultFare = (typeof routeObj.adultFare === 'number' && routeObj.adultFare > 0) ? routeObj.adultFare : FARE_DATABASE.getFare(routeObj.route, routeObj.co);
 
         stops.forEach((stop, index) => {
             const stopBoardingFare = FARE_DATABASE.calculateStopFare(
-                routeObj.adultFare || 6.8,
+                fullAdultFare,
                 index,
                 totalStops,
                 routeObj.co === 'NLB',
@@ -1050,7 +956,6 @@
                     </div>
                 </div>
 
-                <!-- ETA 班次區塊 -->
                 <div id="eta-container-${stop.stopId}" class="flex flex-wrap gap-1.5 pt-1 border-t border-slate-200 dark:border-slate-800/80">
                     <span class="text-[11px] text-slate-400 flex items-center gap-1">
                         <i class="fa-solid fa-spinner fa-spin text-[10px]"></i> 正在讀取班次...
@@ -1063,78 +968,6 @@
         });
     }
 
-    async function fetchSingleStopEta(stop, routeObj) {
-        const etaContainer = document.getElementById(`eta-container-${stop.stopId}`);
-        if (!etaContainer) return;
-
-        try {
-            let etaList = [];
-
-            if (stop.isGenerated) {
-                const baseMin = (stop.seq - 1) * 3 + Math.floor(Math.random() * 2);
-                etaList = [
-                    { eta: new Date(Date.now() + (baseMin + 3) * 60000).toISOString(), rmk: '預定班次' },
-                    { eta: new Date(Date.now() + (baseMin + 15) * 60000).toISOString(), rmk: '下一班' }
-                ];
-            } else if (routeObj.co === 'KMB') {
-                const serviceType = stop.service_type || '1';
-                const boundParam = stop.bound || 'outbound';
-                const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${stop.stopId}/${routeObj.route}/${serviceType}`);
-                const json = await res.json();
-                if (json && json.data) {
-                    etaList = json.data
-                        .filter(e => e.eta && (e.dir === (boundParam === 'outbound' ? 'O' : 'I') || !e.dir))
-                        .map(e => ({ eta: e.eta, rmk: e.rmk_tc || '' }));
-                }
-            } else if (routeObj.co === 'CTB') {
-                const res = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stop.stopId}/${routeObj.route}`);
-                const json = await res.json();
-                if (json && json.data) {
-                    etaList = json.data.map(e => ({ eta: e.eta, rmk: e.rmk_tc || '' })).filter(e => e.eta);
-                }
-            } else if (routeObj.co === 'NLB') {
-                const res = await fetch(`https://rt.data.gov.hk/v2/transport/nlb/stop.php?action=estimatedArrivals&routeId=${stop.routeId}&stopId=${stop.stopId}`);
-                const json = await res.json();
-                if (json && json.estimatedArrivals) {
-                    etaList = json.estimatedArrivals.map(e => ({ eta: e.estimatedArrivalTime, rmk: e.remarks_c || '' })).filter(e => e.eta);
-                }
-            }
-
-            etaContainer.innerHTML = '';
-            if (etaList.length === 0) {
-                etaContainer.innerHTML = `<span class="text-[11px] text-slate-400 font-medium">暫無即時班次預報</span>`;
-                return;
-            }
-
-            etaList.slice(0, 3).forEach((item) => {
-                const diffMins = calculateMinutesDiff(item.eta);
-                const badge = document.createElement('div');
-                let colorClass = "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700";
-                
-                if (diffMins <= 1) colorClass = "bg-rose-50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-300 dark:border-rose-500/40 font-bold";
-                else if (diffMins <= 5) colorClass = "bg-amber-50 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40 font-semibold";
-                else colorClass = "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30";
-
-                badge.className = `text-[11px] px-2 py-0.5 rounded-md border flex items-center gap-1.5 ${colorClass}`;
-                badge.innerHTML = `
-                    <span>${diffMins <= 0 ? '即將抵達' : diffMins + ' 分鐘'}</span>
-                    <span class="text-[9px] opacity-75">(${formatTime(item.eta)})</span>
-                    ${item.rmk ? `<span class="text-[9px] text-amber-600 dark:text-amber-400 font-normal">[${item.rmk}]</span>` : ''}
-                `;
-                etaContainer.appendChild(badge);
-            });
-        } catch (e) {
-            etaContainer.innerHTML = `<span class="text-[11px] text-slate-400">班次按定時服務發車</span>`;
-        }
-    }
-
-    function initLeafletMap() {
-        try {
-            STATE.map = L.map('busMap', { zoomControl: true, attributionControl: false }).setView([STATE.userLat, STATE.userLng], 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(STATE.map);
-        } catch(e) {}
-    }
-
     function updateMapWithStops(stops, routeObj) {
         if (!STATE.map) return;
         STATE.mapMarkers.forEach(m => STATE.map.removeLayer(m));
@@ -1143,28 +976,27 @@
 
         const latlngs = [];
         const colorHex = routeObj.co === 'KMB' ? '#dc2626' : (routeObj.co === 'CTB' ? '#eab308' : '#059669');
+        const fullAdultFare = (typeof routeObj.adultFare === 'number' && routeObj.adultFare > 0) ? routeObj.adultFare : FARE_DATABASE.getFare(routeObj.route, routeObj.co);
 
         stops.forEach((st, idx) => {
             if (st.lat && st.lng) {
                 latlngs.push([st.lat, st.lng]);
+                const stopFare = FARE_DATABASE.calculateStopFare(fullAdultFare, idx, stops.length, routeObj.co === 'NLB', st.fare);
+
                 const marker = L.circleMarker([st.lat, st.lng], {
                     radius: idx === 0 || idx === stops.length - 1 ? 8 : 5,
-                    fillColor: colorHex,
-                    color: '#ffffff', weight: 2, fillOpacity: 0.95
+                    fillColor: colorHex, color: '#ffffff', weight: 2, fillOpacity: 0.95
                 }).addTo(STATE.map);
 
                 marker.bindPopup(`
                     <div class="text-xs font-sans text-slate-900">
                         <div class="font-bold border-b pb-1 mb-1 text-rose-600">${st.seq}. ${st.name_tc}</div>
                         <div>${st.name_en || ''}</div>
-                        <div class="mt-1 font-semibold text-emerald-700">此站上車車費: $${FARE_DATABASE.calculateStopFare(routeObj.adultFare||6.8, idx, stops.length, routeObj.co==='NLB', st.fare).toFixed(1)}</div>
+                        <div class="mt-1 font-semibold text-emerald-700">此站上車: $${stopFare.toFixed(1)}</div>
                     </div>
                 `);
 
-                marker.on('click', () => {
-                    focusStopOnMap(st);
-                });
-
+                marker.on('click', () => focusStopOnMap(st));
                 STATE.mapMarkers.push(marker);
             }
         });
@@ -1181,14 +1013,15 @@
             STATE.map.setView([stop.lat, stop.lng], 16, { animate: true });
             
             const card = document.getElementById('mapStopPopupCard');
+            const fullFare = (STATE.selectedRoute && typeof STATE.selectedRoute.adultFare === 'number' && STATE.selectedRoute.adultFare > 0) ? STATE.selectedRoute.adultFare : 6.8;
+            const stopFare = FARE_DATABASE.calculateStopFare(fullFare, stop.seq - 1, STATE.stopsData.length, STATE.selectedRoute?.co === 'NLB', stop.fare);
+
             document.getElementById('mapCardStopName').innerText = `${stop.seq}. ${stop.name_tc}`;
-            document.getElementById('mapCardFareText').innerText = `$${(stop.fare || STATE.selectedRoute?.adultFare || 6.8).toFixed(1)}`;
+            document.getElementById('mapCardFareText').innerText = `$${stopFare.toFixed(1)}`;
             card.classList.remove('hidden');
 
             const itemEl = document.getElementById(`stop-item-${stop.stopId}`);
-            if (itemEl) {
-                itemEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+            if (itemEl) itemEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
 
@@ -1225,10 +1058,17 @@
         STATE.companyFilter = co;
         document.querySelectorAll('.company-filter-btn').forEach(btn => {
             btn.className = "company-filter-btn px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium transition flex items-center gap-1";
+            btn.style.backgroundColor = "";
         });
         const activeBtn = document.getElementById(`filter-${co}`);
         if (activeBtn) {
-            activeBtn.className = "company-filter-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-medium transition flex items-center gap-1 shadow";
+            if (co === 'ALL') {
+                activeBtn.className = "company-filter-btn px-2.5 py-1 rounded-lg text-white font-medium transition flex items-center gap-1 shadow";
+                activeBtn.style.backgroundColor = "#4B5320";
+            } else {
+                activeBtn.className = "company-filter-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-medium transition flex items-center gap-1 shadow";
+                activeBtn.style.backgroundColor = "";
+            }
         }
         renderRouteList();
     }
@@ -1402,7 +1242,18 @@
     function switchView(viewName) {
         STATE.currentView = viewName;
         ['routes', 'bookmarks', 'fareguide'].forEach(v => {
-            document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
+            const el = document.getElementById(`view-${v}`);
+            const tabBtn = document.getElementById(`tab-${v}`);
+            
+            if (el) el.classList.toggle('hidden', v !== viewName);
+            
+            if (tabBtn) {
+                if (v === viewName) {
+                    tabBtn.className = "flex-1 py-2 px-3 text-xs md:text-sm font-medium rounded-lg bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white transition flex items-center justify-center gap-1.5 shadow";
+                } else {
+                    tabBtn.className = "flex-1 py-2 px-3 text-xs md:text-sm font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition flex items-center justify-center gap-1.5";
+                }
+            }
         });
         if (viewName === 'bookmarks') renderBookmarksList();
     }

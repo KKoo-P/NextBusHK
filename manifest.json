@@ -1,22 +1,42 @@
 {
-  "name": "香港巴士通 HK Bus Express",
-  "short_name": "HK Bus Express",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#0F172A",
-  "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+"name": "香港巴士通 HK Bus Express",
+"short_name": "HK Bus Express",
+"description": "全港巴士即時到站與車費查詢平台：支援九巴 (KMB)、城巴 (CTB) 及新大嶼山巴士 (NLB)，提供完整沿途所有車站、分段收費、特惠與互動路線地圖。",
+"start_url": "./index.html",
+"scope": "./",
+"display": "standalone",
+"background_color": "#0F172A",
+"theme_color": "#0F172A",
+"orientation": "portrait-primary",
+"lang": "zh-Hant-HK",
+"icons": [
+{
+"src": "favicon-16x16.png",
+"sizes": "16x16",
+"type": "image/png"
+},
+{
+"src": "favicon-32x32.png",
+"sizes": "32x32",
+"type": "image/png"
+},
+{
+"src": "icon-180.png",
+"sizes": "180x180",
+"type": "image/png",
+"purpose": "any"
+},
+{
+"src": "icon-192.png",
+"sizes": "192x192",
+"type": "image/png",
+"purpose": "any maskable"
+},
+{
+"src": "icon-512.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+]
 }
