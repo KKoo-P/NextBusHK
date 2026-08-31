@@ -1,6 +1,4 @@
 const CACHE_NAME = 'hk-bus-express-v1';
-
-// 靜態資源預載快取清單
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -17,26 +15,24 @@ const STATIC_ASSETS = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 ];
 
-// Service Worker 安裝事件：預快取基本靜態資源
+// 安裝並快取靜態資源 / Install and cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching offline assets');
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('[Service Worker] Pre-cache partial failure:', err);
-      });
+      console.log('[Service Worker] Pre-caching app shell');
+      return cache.addAll(STATIC_ASSETS);
     }).then(() => self.skipWaiting())
   );
 });
 
-// Service Worker 啓動事件：清理舊版本快取
+// 啟用並清除舊快取 / Activate and clear old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cache);
+            console.log('[Service Worker] Removing old cache:', cache);
             return caches.delete(cache);
           }
         })
@@ -45,49 +41,47 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 網絡請求攔截與快取策略 (網絡優先，離線時使用快取)
+// 請求處理策略 / Fetch event handlers
 self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
+  const url = new URL(event.request.url);
 
-  // 對於政府開放數據 API 採用網絡優先策略 (Network-First)
+  // 對於實時 API (KMB/CTB/NLB) 採用 Network First 策略，保證即時班次準確
+  // Use Network First strategy for real-time bus APIs
   if (
     url.hostname.includes('data.etabus.gov.hk') ||
-    url.hostname.includes('rt.data.gov.hk') ||
-    url.hostname.includes('basemaps.cartocdn.com')
+    url.hostname.includes('rt.data.gov.hk')
   ) {
     event.respondWith(
-      fetch(req)
-        .then((networkResponse) => {
-          // 若 API 請求成功，可可選擇性將其寫入動態快取
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(req, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // 網絡中斷時試圖回傳離線快取
-          return caches.match(req);
-        })
+      fetch(event.request).catch(() => {
+        return new Response(JSON.stringify({ error: 'Offline', data: [] }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
     );
     return;
   }
 
-  // 對於 HTML / JS / CSS / 圖標等靜態檔案，採用快取優先 (Stale-While-Revalidate)
+  // 對於外置庫與靜態資源採用 Cache First 策略
+  // Use Cache First strategy for static resources
   event.respondWith(
-    caches.match(req).then((cachedResponse) => {
-      const fetchPromise = fetch(req).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, responseClone));
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then((networkResponse) => {
+        if (
+          !networkResponse ||
+          networkResponse.status !== 200 ||
+          networkResponse.type !== 'basic'
+        ) {
+          return networkResponse;
         }
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
         return networkResponse;
-      }).catch(() => {/* 網絡失敗時忽略，直接使用快取 */});
-
-      return cachedResponse || fetchPromise;
+      });
     })
   );
 });
